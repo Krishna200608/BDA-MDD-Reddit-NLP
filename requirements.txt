@@ -7,3 +7,4 @@ vaderSentiment
 tqdm
 scikit-learn
 praw
+python-dotenv
