@@ -10,3 +10,4 @@ praw
 python-dotenv
 torch
 transformers
+schedule==1.2.2
