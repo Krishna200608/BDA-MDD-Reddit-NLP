@@ -46,7 +46,8 @@ The second assignment focuses on textual classification models:
 1. **Google Colab (Recommended):** Upload the `02_text_classification_models.ipynb` from the `notebooks` directory into a Google Colab environment.
 2. Add your GitHub Personal Access Token natively inside the Colab side panel as a new Secret named `GITHUB_TOKEN`.
 3. Set your Colab runtime natively to an **NVIDIA T4 GPU**, and select *Run All*.
-4. *Alternatively for Local testing:* This notebook possesses dynamic native routing. Running it locally will force execution via standard CPUs while shrinking the test dataset down to 2000 points to prevent laptop CPU throttling algorithms.
+4. **Identity Configuration:** In the first code cell of the notebook, ensure you update the `REPO_URL`, `user.email`, and `user.name` with your own GitHub credentials to enable push/pull synchronization.
+5. *Alternatively for Local testing:* This notebook possesses dynamic native routing. Running it locally will force execution via standard CPUs while shrinking the test dataset down to 2000 points to prevent laptop CPU throttling algorithms.
 
 ### Quarterly Automation Daemon
 To activate the automation requirement natively in your filesystem:
