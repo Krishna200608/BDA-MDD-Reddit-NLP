@@ -1,12 +1,12 @@
 <div align="center">
 
-# 🧠 Reddit MDD NLP Corpus
+# Reddit MDD NLP Corpus
 
 **Natural Language Processing of Social Media for Major Depressive Disorder Symptom Identification**
 
 [![Python](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white)](https://python.org)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.x-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org)
-[![HuggingFace](https://img.shields.io/badge/🤗_Bio__ClinicalBERT-Transformers-FFD21E)](https://huggingface.co/emilyalsentzer/Bio_ClinicalBERT)
+[![HuggingFace](https://img.shields.io/badge/Bio__ClinicalBERT-Transformers-FFD21E)](https://huggingface.co/emilyalsentzer/Bio_ClinicalBERT)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-1.x-F7931E?logo=scikit-learn&logoColor=white)](https://scikit-learn.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -17,18 +17,18 @@
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
-- [Key Results](#-key-results)
-- [Architecture](#-architecture)
-- [Project Structure](#-project-structure)
-- [Getting Started](#-getting-started)
-- [Usage](#-usage)
-- [Dataset](#-dataset)
-- [Tech Stack](#-tech-stack)
-- [Team](#-team)
-- [Acknowledgements](#-acknowledgements)
+- [Key Results](#key-results)
+- [Architecture](#architecture)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Usage](#usage)
+- [Dataset](#dataset)
+- [Tech Stack](#tech-stack)
+- [Team](#team)
+- [Acknowledgements](#acknowledgements)
 
 ---
 
@@ -40,15 +40,15 @@ We scrape self-reported posts from mental-health-focused subreddits (`r/depressi
 
 ### Highlights
 
-- 📊 **10,000-post** balanced corpus (5,000 MDD · 5,000 Control)
-- 🏆 **91.7% accuracy** with TF-IDF + Logistic Regression baseline
-- 🧬 **85.8% accuracy** with Bio_ClinicalBERT (768-dim) + Random Forest
-- ⚡ **Hardware-agnostic** notebook — auto-detects CUDA GPU or falls back to CPU
-- 🔄 **Automated quarterly refresh** via `schedule` daemon
+- **10,000-post** balanced corpus (5,000 MDD · 5,000 Control)
+- **91.7% accuracy** with TF-IDF + Logistic Regression baseline
+- **85.8% accuracy** with Bio_ClinicalBERT (768-dim) + Random Forest
+- **Hardware-agnostic** notebook — auto-detects CUDA GPU or falls back to CPU
+- **Automated quarterly refresh** via GitHub Actions CI/CD
 
 ---
 
-## 📊 Key Results
+## Key Results
 
 | Model | Accuracy | Precision (MDD) | Recall (MDD) | F1 (Weighted) |
 |:---|:---:|:---:|:---:|:---:|
@@ -61,11 +61,11 @@ Full analysis → [`docs/methods_and_results.md`](docs/methods_and_results.md)
 
 ---
 
-## 🏗 Architecture
+## Architecture
 
 ```mermaid
 flowchart TD
-    A["🌐 Reddit (PullPush Proxy)"] --> B["src/scraper.py"]
+    A["Reddit (PullPush Proxy)"] --> B["src/scraper.py"]
     
     subgraph DataSources ["Data Sources"]
         A1["r/depression"] --> A
@@ -89,7 +89,7 @@ flowchart TD
         F1 --> F2["Random Forest\n100 estimators"]
     end
 
-    E2 --> G["📊 Evaluation\nAccuracy · F1 · Confusion Matrix"]
+    E2 --> G["Evaluation\nAccuracy · F1 · Confusion Matrix"]
     F2 --> G
 
     style A fill:#4A90D9,stroke:#333,color:#fff
@@ -102,7 +102,7 @@ flowchart TD
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 BDA-MDD-Reddit-NLP/
@@ -139,7 +139,7 @@ BDA-MDD-Reddit-NLP/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -168,7 +168,7 @@ pip install -r requirements.txt
 
 ---
 
-## 💡 Usage
+## Usage
 
 ### Assignment 1 — Data Extraction Pipeline
 
@@ -220,7 +220,7 @@ The workflow checks out the repo, runs `src/pipeline.py` on a GitHub-hosted runn
 > **Manual trigger:** Go to *Actions → Quarterly Dataset Update → Run workflow* to refresh on demand.
 
 <details>
-<summary>📌 Local fallback (optional)</summary>
+<summary>Local fallback (optional)</summary>
 
 If you prefer running locally, a standalone daemon script is also available:
 
@@ -234,7 +234,7 @@ This uses the [`schedule`](https://pypi.org/project/schedule/) library and runs 
 
 ---
 
-## 📦 Dataset
+## Dataset
 
 | Property | Value |
 |:---|:---|
@@ -247,7 +247,7 @@ This uses the [`schedule`](https://pypi.org/project/schedule/) library and runs 
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |:---|:---|
@@ -263,7 +263,7 @@ This uses the [`schedule`](https://pypi.org/project/schedule/) library and runs 
 
 ---
 
-## 👥 Team
+## Team
 
 | Name | Roll Number |
 |:---|:---|
@@ -276,7 +276,7 @@ This uses the [`schedule`](https://pypi.org/project/schedule/) library and runs 
 
 ---
 
-## 🙏 Acknowledgements
+## Acknowledgements
 
 - [emilyalsentzer/Bio_ClinicalBERT](https://huggingface.co/emilyalsentzer/Bio_ClinicalBERT) — Clinical text embeddings pre-trained on MIMIC-III notes
 - [VADER Sentiment Analysis](https://github.com/cjhutto/vaderSentiment) — Lexicon-based sentiment scoring
@@ -289,6 +289,6 @@ This uses the [`schedule`](https://pypi.org/project/schedule/) library and runs 
 
 <div align="center">
 
-*Built with ❤️ for Big Data Analytics — IIIT Allahabad, 2026*
+*Big Data Analytics — IIIT Allahabad, 2026*
 
 </div>
