@@ -44,8 +44,71 @@ We evaluated both pipelines against a rigid 80/20 train-test split configuration
 - **MDD Class Precision:** 87%
 - **Weighted F1-Score:** 0.86
 
+### 2.3 ROC Curve Comparison
+
+ROC curves plot the True Positive Rate against the False Positive Rate at various classification thresholds, with AUC (Area Under the Curve) providing a single-number summary of classifier quality.
+
+Both models were plotted on a single ROC chart for direct comparison. The TF-IDF + Logistic Regression model achieved a higher AUC, consistent with its superior accuracy on this dataset.
+
 ---
 
-## 3. Automation Implementation
+## 3. Exploratory Data Analysis and Language Pattern Detection
+
+This section directly addresses the project objective of detecting *symptom and emotional language patterns* in MDD posts. Six complementary analyses were conducted on the full corpus.
+
+### 3.1 DSM-5 Symptom Keyword Frequency Analysis
+
+A curated list of 24 DSM-5-aligned MDD symptom keywords (e.g., *hopeless*, *worthless*, *suicide*, *insomnia*, *fatigue*, *guilt*, *empty*, *numb*) was compiled and mapped against both the MDD and Control classes.
+
+**Key Findings:**
+- MDD posts contain significantly higher average symptom keyword counts per post compared to Control posts.
+- A log-normalized heatmap reveals that keywords such as *depression*, *depressed*, *anxiety*, *die*, and *pain* have dramatically higher frequency in MDD posts while remaining comparatively rare in the Control class.
+- The keyword frequency differential validates the discriminative power of the TF-IDF baseline — these domain-specific terms provide strong classification signals.
+
+### 3.2 Word Clouds (MDD vs. Control)
+
+Side-by-side word clouds were generated for each class to provide an intuitive visual comparison of dominant vocabulary.
+
+**Key Findings:**
+- The MDD word cloud is dominated by emotionally charged terms reflecting internal psychological distress (e.g., *feel*, *life*, *want*, *know*, *time*, *people*).
+- The Control word cloud shows more casual, action-oriented language characteristic of general conversation topics.
+
+### 3.3 VADER Sentiment Score Distribution
+
+A KDE (Kernel Density Estimate) comparison of VADER compound sentiment scores between classes.
+
+**Key Findings:**
+- MDD posts show a clear leftward shift in sentiment distribution, peaking in the negative sentiment range.
+- Control posts are more normally distributed around neutral-to-positive sentiment values.
+- This confirms that sentiment scoring is a valuable feature for distinguishing depressive text from general text.
+
+### 3.4 Post Length Distribution
+
+A violin plot comparing word counts of cleaned text between the two classes.
+
+**Key Findings:**
+- MDD posts tend to be longer on average, consistent with psychological research suggesting that depressive rumination leads to more verbose self-expression.
+- The Control class shows a tighter, more compact word count distribution.
+
+### 3.5 Top Bigrams (MDD vs. Control)
+
+The top 15 bigrams (two-word phrases) were extracted for each class to capture multi-word expressions that reflect distinct language patterns.
+
+**Key Findings:**
+- MDD bigrams capture emotional and cognitive distress phrases characteristic of depressive narratives.
+- Control bigrams reflect everyday conversational topics without clinical or emotional weight.
+- Bigram analysis reinforces the effectiveness of TF-IDF with `ngram_range=(1,2)` in capturing these discriminative multi-word patterns.
+
+### 3.6 Summary
+
+The six EDA analyses collectively demonstrate that MDD-related Reddit posts exhibit measurably different linguistic signatures across multiple dimensions: higher symptom keyword density, more negative sentiment, greater post length, and distinctive multi-word patterns. These features align with and reinforce the classification results, confirming that the project successfully detects symptom and emotional language patterns associated with Major Depressive Disorder.
+
+---
+
+## 4. Automation Implementation
+
 In alignment with Deliverable requirements, we have provisioned an execution script `src/quarterly_updater.py`. 
 Utilizing the static `schedule` Python daemon, this script operates persistently to spin up the data-scraper pipelines and data cleansing functions completely autonomously every **90 days** recursively, ensuring the Machine Learning pipelines consistently ingest fresh modern syntactic data.
+
+Additionally, a GitHub Actions CI/CD workflow (`.github/workflows/quarterly_update.yml`) provides cloud-based automation that refreshes the dataset on the 1st of January, April, July, and October without requiring local machine uptime.
+

@@ -43,6 +43,7 @@ We scrape self-reported posts from mental-health-focused subreddits (`r/depressi
 - **10,000-post** balanced corpus (5,000 MDD · 5,000 Control)
 - **91.7% accuracy** with TF-IDF + Logistic Regression baseline
 - **85.8% accuracy** with Bio_ClinicalBERT (768-dim) + Random Forest
+- **Comprehensive EDA** — DSM-5 symptom keyword analysis, word clouds, sentiment distributions, post length profiling, bigram analysis, and ROC curve comparisons
 - **Hardware-agnostic** notebook — auto-detects CUDA GPU or falls back to CPU
 - **Automated quarterly refresh** via GitHub Actions CI/CD
 
@@ -56,6 +57,19 @@ We scrape self-reported posts from mental-health-focused subreddits (`r/depressi
 | Bio_ClinicalBERT + Random Forest | 85.8% | 87% | 83% | 0.86 |
 
 > **Finding:** The classical sparse-vector approach outperformed the deep transformer model on this task. Forum-specific vocabulary (slang, colloquialisms) provided stronger discriminative signals than the clinical semantics captured by Bio_ClinicalBERT — a result consistent with domain-adaptation literature for social media NLP.
+
+### EDA and Language Pattern Detection
+
+Six exploratory analyses were conducted to detect symptom and emotional language patterns:
+
+| Analysis | Key Insight |
+|:---|:---|
+| **DSM-5 Symptom Keywords** | MDD posts contain significantly higher symptom keyword density; *depression*, *anxiety*, *die*, *pain* dominate |
+| **Word Clouds** | MDD vocabulary is emotionally charged; Control vocabulary is casual and action-oriented |
+| **Sentiment Distribution** | MDD posts show a clear negative shift in VADER compound scores |
+| **Post Length** | MDD posts are longer on average, consistent with rumination patterns |
+| **Top Bigrams** | MDD bigrams capture distress phrases; Control bigrams reflect everyday topics |
+| **ROC Curves** | TF-IDF + LR achieves a higher AUC than ClinicalBERT + RF |
 
 Full analysis → [`docs/methods_and_results.md`](docs/methods_and_results.md)
 
@@ -89,8 +103,16 @@ flowchart TD
         F1 --> F2["Random Forest\n100 estimators"]
     end
 
-    E2 --> G["Evaluation\nAccuracy · F1 · Confusion Matrix"]
+    E2 --> G["Evaluation\nAccuracy · F1 · Confusion Matrix · ROC"]
     F2 --> G
+
+    D --> H["EDA & Language Patterns"]
+
+    subgraph EDA ["Exploratory Analysis"]
+        H --> H1["Symptom Keywords\nDSM-5 Frequency Heatmap"]
+        H --> H2["Word Clouds\nMDD vs Control"]
+        H --> H3["Sentiment · Length · Bigrams"]
+    end
 
     style A fill:#4A90D9,stroke:#333,color:#fff
     style C fill:#6C5CE7,stroke:#333,color:#fff
@@ -254,7 +276,7 @@ This uses the [`schedule`](https://pypi.org/project/schedule/) library and runs 
 |:---|:---|
 | **Language** | Python 3.12+ |
 | **Data** | pandas · NumPy |
-| **NLP** | NLTK · regex · VADER Sentiment |
+| **NLP** | NLTK · regex · VADER Sentiment · wordcloud |
 | **Embeddings** | [Bio_ClinicalBERT](https://huggingface.co/emilyalsentzer/Bio_ClinicalBERT) (HuggingFace Transformers) |
 | **ML** | scikit-learn (Logistic Regression, Random Forest, TF-IDF) |
 | **Deep Learning** | PyTorch (CUDA / CPU) |

@@ -1,7 +1,7 @@
 # Project Context — BDA: Reddit MDD NLP Corpus
 
 > **Living Document** — Updated throughout the project lifecycle.  
-> Last Updated: 2026-04-06
+> Last Updated: 2026-04-07
 
 ---
 
@@ -51,6 +51,7 @@
 | Deliverable | Format | Status |
 |---|---|---|
 | Python Notebook for text classification models | `.ipynb` | ✅ Complete |
+| EDA & Language Pattern Detection (symptom keywords, word clouds, sentiment, bigrams, ROC) | `.ipynb` | ✅ Complete |
 | Documentation of methods and results | `.md` | ✅ Complete |
 | Automated pipeline for quarterly updates | `.py` | ✅ Complete |
 
@@ -62,7 +63,7 @@
 | Environment | `.venv` (local virtual environment) |
 | API | PullPush / Pushshift API (No authentication required) |
 | Requests | `requests` (Python HTTP library) |
-| NLP | NLTK, spaCy, regex |
+| NLP | NLTK, spaCy, regex, wordcloud |
 | Embeddings | ClinicalBERT (Assignment 2) |
 | ML | scikit-learn (Assignment 2) |
 | Data | pandas, numpy |
@@ -135,6 +136,7 @@ BDA-MDD-Reddit-NLP/
 | 2026-04-06 | ClinicalBERT hardware optimization | Dynamic GPU (Colab) scaling implemented to speed up vectorization |
 | 2026-04-06 | Colab Github Auth Secret Sync | Integrated dynamic repo sync to fix absolute filepath breakages in cloud rendering |
 | 2026-04-06 | Quarterly automation → GitHub Actions | Replaced local `schedule` daemon with CI/CD cron workflow for zero-maintenance refresh |
+| 2026-04-07 | EDA & Language Pattern Detection section | Added 6 analyses: DSM-5 symptom keyword frequency, word clouds, VADER sentiment distribution, post length distribution, top bigrams, ROC curves |
 
 ## 11. Risks & Mitigations
 
