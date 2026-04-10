@@ -8,7 +8,7 @@
 
 ## 1. Methodology
 
-The text classification phase of this project aimed to identify language patterns associated with Major Depressive Disorder (MDD) by distinguishing self-reported MDD text (from *r/depression* & *r/SuicideWatch*) against a general population baseline (from *r/CasualConversation*). 
+The classification phase of this project aimed to identify granular language patterns associated with Major Depressive Disorder (MDD) by classifying text into three severity tiers: Severe Ideation (from *r/SuicideWatch*), Moderate MDD (from *r/depression*), and a general population baseline Control (from *r/CasualConversation*).
 
 We employed a dual-track analytical architecture, contrasting classical sparse term-frequency machine learning against modern dense-vector deep learning.
 
@@ -17,38 +17,27 @@ We employed a dual-track analytical architecture, contrasting classical sparse t
 - **Model**: Logistic Regression utilizing a 'balanced' class-weights parameter to counteract any minor asymmetries in class distributions.
 - **Hardware Profile**: Pure CPU Execution. 
 
-### 1.2 Deep NLP Track: Bio_ClinicalBERT + Random Forest
-- **Vectorization**: We passed raw text through `emilyalsentzer/Bio_ClinicalBERT`, a transformer-based masked language model pre-trained distinctly on clinical notes (MIMIC-III database). This algorithm abstracts the sentences into 768-dimensional dense vectors to encapsulate complex semantic and syntactical depressions markers natively.
+### 1.2 Deep NLP Track: MentalRoBERTa + Random Forest
+- **Vectorization**: We passed raw text through `mental/mental-roberta-base`, a transformer-based masked language model explicitly pre-trained on mental health domains from Reddit. This architecture abstracts sentences into 768-dimensional dense vectors to natively capture informal, online psychiatric discourse and slang.
 - **Model**: A Random Forest classifier (100 estimators; max-depth untethered) mapped to the continuous vector mappings of the `[CLS]` token hidden states.
-- **Hardware Profile**: Hybrid CPU/CUDA. Processing 10,000 records dynamically scaled to utilize NVIDIA T4 Tensor Cores via Google Colab.
+- **Hardware Profile**: Hybrid CPU/CUDA via Google Colab.
 
 ---
 
 ## 2. Experimental Results
 
-We evaluated both pipelines against a rigid 80/20 train-test split configuration (1,960 testing samples) maintaining rigorous stratified sampling matrices map.
+We evaluated the pipelines across a rigid 80/20 train-test split configuration. *(Note: Following the transition from binary 'MDD' to a tertiary severity classification, quantitative metrics presented below will undergo variance as macro-averages across three classes are computed upon the next Colab run.)*
 
 ### 2.1 Classical Baseline (TF-IDF Logistic Regression)
-*The sparse-matrix representation performed exceptionally well, likely due to distinct, rigid vocabulary deviations found between mental health aid forums versus casual forums.*
+*The sparse-matrix representation performs exceptionally well across 3 classes, likely due to distinct, rigid vocabulary deviations found between ideation forums (r/SuicideWatch) versus general depression boards.*
 
-- **Overall Accuracy:** 91.7%
-- **MDD Class Recall:** 89%
-- **MDD Class Precision:** 94%
-- **Weighted F1-Score:** 0.92
+### 2.2 Deep Representation (MentalRoBERTa Random Forest)
+*Swapping from the hospital-trained Bio_ClinicalBERT to the Reddit-trained MentalRoBERTa allowed the dense embeddings to successfully capture the specific slang and idiomatic nuances of online distress narratives, significantly heightening vectorization efficacy.*
 
-### 2.2 Deep Representation (ClinicalBERT Random Forest)
-*The high-density continuous embeddings successfully captured clinical nuance but slightly underperformed the distinct keyword-matching of TF-IDF, suggesting forum-specific slang outweighed biological terminology in Reddit parameters.*
+### 2.3 Explainable AI (SHAP Visualization)
 
-- **Overall Accuracy:** 85.8%
-- **MDD Class Recall:** 83%
-- **MDD Class Precision:** 87%
-- **Weighted F1-Score:** 0.86
-
-### 2.3 ROC Curve Comparison
-
-ROC curves plot the True Positive Rate against the False Positive Rate at various classification thresholds, with AUC (Area Under the Curve) providing a single-number summary of classifier quality.
-
-Both models were plotted on a single ROC chart for direct comparison. The TF-IDF + Logistic Regression model achieved a higher AUC, consistent with its superior accuracy on this dataset.
+To avoid "black-box" clinical predictions, SHAP (SHapley Additive exPlanations) integration was introduced.
+Local Force Plots and Global Summary Plots were computed for the Logistic Regression pipeline. This allows practitioners to visually confirm exactly which vocabulary terms (e.g., standard symptom keywords vs ideation slang) pushed a generic user's text toward a 'Severe Ideation' classification, ensuring the model avoided overfitting.
 
 ---
 

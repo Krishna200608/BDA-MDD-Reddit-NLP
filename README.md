@@ -6,7 +6,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white)](https://python.org)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.x-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org)
-[![HuggingFace](https://img.shields.io/badge/Bio__ClinicalBERT-Transformers-FFD21E)](https://huggingface.co/emilyalsentzer/Bio_ClinicalBERT)
+[![HuggingFace](https://img.shields.io/badge/MentalRoBERTa-Transformers-FFD21E)](https://huggingface.co/mental/mental-roberta-base)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-1.x-F7931E?logo=scikit-learn&logoColor=white)](https://scikit-learn.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -34,16 +34,18 @@
 
 ## Overview
 
-This repository presents a complete NLP pipeline for **binary classification of Reddit posts** into Major Depressive Disorder (**MDD**) indicators versus healthy control text. The project addresses a critical gap in scalable mental health screening by leveraging publicly available social media data.
+This repository presents a complete NLP pipeline for **multi-class severity classification of Reddit posts** into Moderate MDD, Severe Ideation, and healthy control text. The project addresses a critical gap in scalable mental health screening by leveraging publicly available social media data.
 
-We scrape self-reported posts from mental-health-focused subreddits (`r/depression`, `r/SuicideWatch`) and a neutral baseline (`r/CasualConversation`), apply classical and deep-learning NLP techniques, and evaluate which approach better captures depressive language markers in informal online text.
+We scrape self-reported posts from triage subreddits (`r/SuicideWatch`), depression forums (`r/depression`), and a neutral baseline (`r/CasualConversation`), apply classical and deep-learning NLP techniques, and use Explainable AI (SHAP) to interpret predictive language features in informal online text.
 
 ### Highlights
 
 - **10,000-post** balanced corpus (5,000 MDD · 5,000 Control)
-- **91.7% accuracy** with TF-IDF + Logistic Regression baseline
-- **85.8% accuracy** with Bio_ClinicalBERT (768-dim) + Random Forest
-- **Comprehensive EDA** — DSM-5 symptom keyword analysis, word clouds, sentiment distributions, post length profiling, bigram analysis, and ROC curve comparisons
+- Tertiary severity classification (Control, Moderate MDD, Severe Ideation)
+- **Classical NLP:** TF-IDF + Logistic Regression
+- **Deep Representation:** `mental-roberta-base` + Random Forest
+- **Explainable AI (XAI):** SHAP integration for clinical transparency
+- **Comprehensive EDA** — DSM-5 symptom keyword analysis, word clouds, sentiment distributions, post length profiling, and bigram analysis
 - **Hardware-agnostic** notebook — auto-detects CUDA GPU or falls back to CPU
 - **Automated quarterly refresh** via GitHub Actions CI/CD
 
@@ -51,12 +53,9 @@ We scrape self-reported posts from mental-health-focused subreddits (`r/depressi
 
 ## Key Results
 
-| Model | Accuracy | Precision (MDD) | Recall (MDD) | F1 (Weighted) |
-|:---|:---:|:---:|:---:|:---:|
-| **TF-IDF + Logistic Regression** | **91.7%** | 94% | 89% | 0.92 |
-| Bio_ClinicalBERT + Random Forest | 85.8% | 87% | 83% | 0.86 |
+*(Note: Quantitative accuracy metrics will dynamically update post-architecture revision from binary to tertiary severity indexing. Initial results indicated sparse TF-IDF modeling outperformed hospital-trained embeddings on social media slang—hence the migration to the domain-trained `mental-roberta-base`.)*
 
-> **Finding:** The classical sparse-vector approach outperformed the deep transformer model on this task. Forum-specific vocabulary (slang, colloquialisms) provided stronger discriminative signals than the clinical semantics captured by Bio_ClinicalBERT — a result consistent with domain-adaptation literature for social media NLP.
+> **Explainability Milestone:** The complete analytical ensemble relies on **SHAP (SHapley Additive exPlanations)** mapped to the sparse Logistic Regression model. This isolates specific dialectal indicators driving high-risk categorizations (like *Severe Ideation*) to avoid black-box psychiatric evaluations.
 
 ### EDA and Language Pattern Detection
 
@@ -68,8 +67,8 @@ Six exploratory analyses were conducted to detect symptom and emotional language
 | **Word Clouds** | MDD vocabulary is emotionally charged; Control vocabulary is casual and action-oriented |
 | **Sentiment Distribution** | MDD posts show a clear negative shift in VADER compound scores |
 | **Post Length** | MDD posts are longer on average, consistent with rumination patterns |
-| **Top Bigrams** | MDD bigrams capture distress phrases; Control bigrams reflect everyday topics |
-| **ROC Curves** | TF-IDF + LR achieves a higher AUC than ClinicalBERT + RF |
+| **Top Bigrams** | Severe bigrams capture distress phrases; Control bigrams reflect everyday topics |
+| **XAI (SHAP)** | Local force-plots demystify specific text predictions for maximum triage transparency |
 
 Full analysis → [`docs/methods_and_results.md`](docs/methods_and_results.md)
 

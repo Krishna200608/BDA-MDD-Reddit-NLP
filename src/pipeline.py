@@ -42,15 +42,15 @@ def main():
     logging.info("Starting Data Extraction & Cleaning Pipeline...")
     scraper = PullPushScraper()
 
-    # 1.1 Fetching MDD Class (Class 1)
-    logging.info("Fetching MDD Class (Class 1)...")
+    # 1.1 Fetching MDD Classes (Moderate and Severe)
+    logging.info("Fetching MDD Classes...")
     mdd_1 = scraper.fetch_posts('depression', limit=2500)
     df_mdd_1 = pd.DataFrame(mdd_1)
-    df_mdd_1['label'] = 'MDD'
+    df_mdd_1['label'] = 'Moderate MDD'
 
     mdd_2 = scraper.fetch_posts('SuicideWatch', limit=2500)
     df_mdd_2 = pd.DataFrame(mdd_2)
-    df_mdd_2['label'] = 'MDD'
+    df_mdd_2['label'] = 'Severe Ideation'
 
     df_mdd = pd.concat([df_mdd_1, df_mdd_2], ignore_index=True)
     logging.info(f"Total Extracted MDD Posts: {df_mdd.shape[0]}")
