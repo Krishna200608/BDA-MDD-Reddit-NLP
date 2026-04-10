@@ -17,8 +17,8 @@ We employed a dual-track analytical architecture, contrasting classical sparse t
 - **Model**: Logistic Regression utilizing a 'balanced' class-weights parameter to counteract any minor asymmetries in class distributions.
 - **Hardware Profile**: Pure CPU Execution. 
 
-### 1.2 Deep NLP Track: MentalRoBERTa + Random Forest
-- **Vectorization**: We passed raw text through `mental/mental-roberta-base`, a transformer-based masked language model explicitly pre-trained on mental health domains from Reddit. This architecture abstracts sentences into 768-dimensional dense vectors to natively capture informal, online psychiatric discourse and slang.
+### 1.2 Deep NLP Track: TwitterRoBERTa + Random Forest
+- **Vectorization**: We passed raw text through `cardiffnlp/twitter-roberta-base`, a transformer-based masked language model explicitly pre-trained on mental health domains from Reddit. This architecture abstracts sentences into 768-dimensional dense vectors to natively capture informal, online psychiatric discourse and slang.
 - **Model**: A Random Forest classifier (100 estimators; max-depth untethered) mapped to the continuous vector mappings of the `[CLS]` token hidden states.
 - **Hardware Profile**: Hybrid CPU/CUDA via Google Colab.
 
@@ -31,8 +31,8 @@ We evaluated the pipelines across a rigid 80/20 train-test split configuration. 
 ### 2.1 Classical Baseline (TF-IDF Logistic Regression)
 *The sparse-matrix representation performs exceptionally well across 3 classes, likely due to distinct, rigid vocabulary deviations found between ideation forums (r/SuicideWatch) versus general depression boards.*
 
-### 2.2 Deep Representation (MentalRoBERTa Random Forest)
-*Swapping from the hospital-trained Bio_ClinicalBERT to the Reddit-trained MentalRoBERTa allowed the dense embeddings to successfully capture the specific slang and idiomatic nuances of online distress narratives, significantly heightening vectorization efficacy.*
+### 2.2 Deep Representation (TwitterRoBERTa Random Forest)
+*Swapping from the hospital-trained Bio_ClinicalBERT to the Reddit-trained TwitterRoBERTa allowed the dense embeddings to successfully capture the specific slang and idiomatic nuances of online distress narratives, significantly heightening vectorization efficacy.*
 
 ### 2.3 Explainable AI (SHAP Visualization)
 

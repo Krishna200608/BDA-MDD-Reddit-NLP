@@ -6,7 +6,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white)](https://python.org)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.x-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org)
-[![HuggingFace](https://img.shields.io/badge/MentalRoBERTa-Transformers-FFD21E)](https://huggingface.co/mental/mental-roberta-base)
+[![HuggingFace](https://img.shields.io/badge/TwitterRoBERTa-Transformers-FFD21E)](https://huggingface.co/cardiffnlp/twitter-roberta-base)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-1.x-F7931E?logo=scikit-learn&logoColor=white)](https://scikit-learn.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -43,7 +43,7 @@ We scrape self-reported posts from triage subreddits (`r/SuicideWatch`), depress
 - **10,000-post** balanced corpus (5,000 MDD · 5,000 Control)
 - Tertiary severity classification (Control, Moderate MDD, Severe Ideation)
 - **Classical NLP:** TF-IDF + Logistic Regression
-- **Deep Representation:** `mental-roberta-base` + Random Forest
+- **Deep Representation:** `twitter-roberta-base` + Random Forest
 - **Explainable AI (XAI):** SHAP integration for clinical transparency
 - **Comprehensive EDA** — DSM-5 symptom keyword analysis, word clouds, sentiment distributions, post length profiling, and bigram analysis
 - **Hardware-agnostic** notebook — auto-detects CUDA GPU or falls back to CPU
@@ -53,7 +53,7 @@ We scrape self-reported posts from triage subreddits (`r/SuicideWatch`), depress
 
 ## Key Results
 
-*(Note: Quantitative accuracy metrics will dynamically update post-architecture revision from binary to tertiary severity indexing. Initial results indicated sparse TF-IDF modeling outperformed hospital-trained embeddings on social media slang—hence the migration to the domain-trained `mental-roberta-base`.)*
+*(Note: Quantitative accuracy metrics will dynamically update post-architecture revision from binary to tertiary severity indexing. Initial results indicated sparse TF-IDF modeling outperformed hospital-trained embeddings on social media slang—hence the migration to the domain-trained `twitter-roberta-base`.)*
 
 > **Explainability Milestone:** The complete analytical ensemble relies on **SHAP (SHapley Additive exPlanations)** mapped to the sparse Logistic Regression model. This isolates specific dialectal indicators driving high-risk categorizations (like *Severe Ideation*) to avoid black-box psychiatric evaluations.
 
