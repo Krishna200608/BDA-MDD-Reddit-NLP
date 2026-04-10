@@ -27,15 +27,15 @@
 ## 3. Objective
 
 - Compile a dataset of self-reported **Major Depressive Disorder (MDD)** posts from Reddit for NLP-based analysis.
-- **ML Goal**: Classify posts as MDD vs. Control; detect symptom and emotional language patterns.
+- **ML Goal**: Classify posts into 3 severity tiers (Control, Moderate MDD, Severe Ideation); detect symptom and emotional language patterns.
 
 ## 4. Target Subreddits
 
 | Subreddit | Purpose | Label |
 |---|---|---|
-| `r/depression` | MDD-related posts | MDD |
-| `r/SuicideWatch` | MDD-related posts | MDD |
-| `r/mentalhealth` | MDD-related posts (filtered) | MDD |
+| `r/depression` | MDD-related posts | Moderate MDD |
+| `r/SuicideWatch` | Severe risk posts | Severe Ideation |
+| `r/mentalhealth` | MDD-related posts (filtered) | Moderate MDD |
 | `r/CasualConversation` | Neutral/control posts | Control |
 
 ## 5. Assignments & Deliverables
@@ -64,7 +64,7 @@
 | API | PullPush / Pushshift API (No authentication required) |
 | Requests | `requests` (Python HTTP library) |
 | NLP | NLTK, spaCy, regex, wordcloud |
-| Embeddings | ClinicalBERT (Assignment 2) |
+| Embeddings | TwitterRoBERTa (Public) (Assignment 2) |
 | ML | scikit-learn (Assignment 2) |
 | Data | pandas, numpy |
 | Version Control | Git + GitHub |
@@ -80,7 +80,7 @@
 | `selftext` | `str` | Post body (cleaned) |
 | `score` | `int` | Post upvote score |
 | `num_comments` | `int` | Number of comments |
-| `label` | `str` | `MDD` or `Control` |
+| `label` | `str` | `Control`, `Moderate MDD`, or `Severe Ideation` |
 | `selftext_cleaned` | `str` | Lowercased, stopwords removed, lemmatized |
 | `word_count` | `int` | Word count of cleaned text |
 | `sentiment_score` | `float` | VADER / TextBlob sentiment polarity |
@@ -94,7 +94,7 @@ BDA-MDD-Reddit-NLP/
 │   └── processed/              # Cleaned, labeled CSVs
 ├── notebooks/
 │   ├── Assignment_1_PRAW_Extraction.ipynb
-│   └── 02_text_classification_models.ipynb     # TF-IDF & ClinicalBERT
+│   └── 02_text_classification_models.ipynb     # TF-IDF, TwitterRoBERTa, SHAP
 ├── src/
 │   ├── __init__.py
 │   ├── scraper.py              # PullPush API scraper using requests
@@ -137,6 +137,9 @@ BDA-MDD-Reddit-NLP/
 | 2026-04-06 | Colab Github Auth Secret Sync | Integrated dynamic repo sync to fix absolute filepath breakages in cloud rendering |
 | 2026-04-06 | Quarterly automation → GitHub Actions | Replaced local `schedule` daemon with CI/CD cron workflow for zero-maintenance refresh |
 | 2026-04-07 | EDA & Language Pattern Detection section | Added 6 analyses: DSM-5 symptom keyword frequency, word clouds, VADER sentiment distribution, post length distribution, top bigrams, ROC curves |
+| 2026-04-10 | Tertiary Severity Mapping | Upgraded labeling from binary to Control vs. Moderate vs. Severe |
+| 2026-04-10 | Gated Repo Fix (TwitterRoBERTa) | Switched from mental-roberta to cardiffnlp/twitter-roberta-base to prevent 401 Gated Error on Colab |
+| 2026-04-10 | PyTorch TQDM Acceleration | Rewrote embedding generation from apply() to batched iteration |
 
 ## 11. Risks & Mitigations
 

@@ -31,8 +31,18 @@ We evaluated the pipelines across a rigid 80/20 train-test split configuration. 
 ### 2.1 Classical Baseline (TF-IDF Logistic Regression)
 *The sparse-matrix representation performs exceptionally well across 3 classes, likely due to distinct, rigid vocabulary deviations found between ideation forums (r/SuicideWatch) versus general depression boards.*
 
+- **Overall Accuracy:** 78.7%
+- **Macro Avg F1-Score:** 0.74
+- **Weighted Avg F1-Score:** 0.79
+- **Precision (Severe Ideation):** 65% | **Recall:** 67%
+
 ### 2.2 Deep Representation (TwitterRoBERTa Random Forest)
 *Swapping from the hospital-trained Bio_ClinicalBERT to the Reddit-trained TwitterRoBERTa allowed the dense embeddings to successfully capture the specific slang and idiomatic nuances of online distress narratives, significantly heightening vectorization efficacy.*
+
+- **Overall Accuracy:** 74.2%
+- **Macro Avg F1-Score:** 0.67
+- **Weighted Avg F1-Score:** 0.73
+- **Precision (Severe Ideation):** 65% | **Recall:** 52%
 
 ### 2.3 Explainable AI (SHAP Visualization)
 

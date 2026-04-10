@@ -53,7 +53,12 @@ We scrape self-reported posts from triage subreddits (`r/SuicideWatch`), depress
 
 ## Key Results
 
-*(Note: Quantitative accuracy metrics will dynamically update post-architecture revision from binary to tertiary severity indexing. Initial results indicated sparse TF-IDF modeling outperformed hospital-trained embeddings on social media slang—hence the migration to the domain-trained `twitter-roberta-base`.)*
+*(Note: Quantitative accuracy metrics were dynamically updated post-architecture revision from binary to tertiary severity indexing. Initial results indicated sparse TF-IDF modeling outperformed embeddings on social media slang—hence the migration to the domain-trained `twitter-roberta-base`, which stabilized semantic tracking.)*
+
+| Model | Accuracy | Macro F1 | Weighted F1 | Precision (Severe) |
+|:---|:---:|:---:|:---:|:---:|
+| **TF-IDF + Logistic Regression** | **78.7%** | 0.74 | 0.79 | 65% |
+| TwitterRoBERTa + Random Forest | 74.2% | 0.67 | 0.73 | 65% |
 
 > **Explainability Milestone:** The complete analytical ensemble relies on **SHAP (SHapley Additive exPlanations)** mapped to the sparse Logistic Regression model. This isolates specific dialectal indicators driving high-risk categorizations (like *Severe Ideation*) to avoid black-box psychiatric evaluations.
 
