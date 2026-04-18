@@ -59,11 +59,11 @@
 | Layer | Technology |
 |---|---|
 | Language | Python 3.12+ |
-| Environment | `.venv` (local virtual environment) |
+| Environment | `.venv` locally + Google Colab (T4 GPU recommended for official notebook reproduction) |
 | API | PullPush / Pushshift API (No authentication required) |
 | Requests | `requests` (Python HTTP library) |
-| NLP | NLTK, spaCy, regex, wordcloud |
-| Embeddings | TwitterRoBERTa (Public) (Assignment 2) |
+| NLP | NLTK, regex, VADER Sentiment, wordcloud |
+| Embeddings | TwitterRoBERTa (`cardiffnlp/twitter-roberta-base`) |
 | ML | scikit-learn (Assignment 2) |
 | Data | pandas, numpy |
 | Version Control | Git + GitHub |
@@ -92,7 +92,12 @@
 BDA-MDD-Reddit-NLP/
 ├── data/
 │   ├── raw/                    # Raw scraped data (gitignored if large)
-│   └── processed/              # Cleaned, labeled CSVs
+│   └── processed/              # Cleaned, labeled CSVs + QA/evaluation artifacts
+│       ├── reddit_mdd_cleaned.csv
+│       ├── dataset_summary.csv
+│       ├── results_summary.csv
+│       ├── error_analysis_holdout.csv
+│       └── top_tokens_by_class.csv
 ├── notebooks/
 │   ├── Assignment_1_PRAW_Extraction.ipynb    # Legacy notebook from the original PRAW plan
 │   └── 02_text_classification_models.ipynb     # TF-IDF, TwitterRoBERTa, SHAP
@@ -124,7 +129,7 @@ BDA-MDD-Reddit-NLP/
 | Item | Status |
 |---|---|
 | PullPush API keys | **Not Required** |
-| Reddit API keys | Requested as backup (Optional) |
+| Reddit API keys | Not required for the current committed pipeline; only a historical backup idea from the early project stage |
 
 ## 10. Key Decisions Log
 
@@ -162,10 +167,10 @@ BDA-MDD-Reddit-NLP/
 
 | Risk | Impact | Mitigation |
 |---|---|---|
-| Reddit API approval delayed | Blocks data extraction | Use Pushshift archive / academic datasets as fallback |
-| Rate limiting by Reddit API | Slow data collection | Implement exponential backoff, batch requests |
+| PullPush / proxy availability changes | Can interrupt future refreshes | Keep the scraper resilient with retries and preserve committed dataset snapshots |
+| Proxy rate limiting or unstable responses | Slower data collection / partial refreshes | Retry handling, polite delays, and rerunning the pipeline when needed |
 | Subreddit posts removed/deleted | Incomplete dataset | Collect surplus data, document exclusions |
-| Class imbalance (MDD >> Control) | Biased model | Stratified sampling, balance dataset sizes |
+| Three-class label skew | Can bias per-class performance, especially for Moderate vs Severe confusion | Stratified splitting, macro-F1 reporting, and per-class precision/recall |
 
 ## 13. References
 
@@ -176,4 +181,4 @@ BDA-MDD-Reddit-NLP/
 
 ---
 
-> **Note**: This document is the single source of truth for the project. Update it as decisions are made, deliverables are completed, or the architecture evolves.
+> **Note**: This is the living project context document. For the latest committed evaluation metrics, use `data/processed/results_summary.csv` as the metrics source of truth.
