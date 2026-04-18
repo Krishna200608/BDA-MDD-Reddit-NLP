@@ -1,0 +1,8 @@
+model,evaluation_type,dataset_scope,accuracy_mean,accuracy_std,macro_f1_mean,macro_f1_std,weighted_f1_mean,weighted_f1_std,precision_control,recall_control,precision_moderate_mdd,recall_moderate_mdd,precision_severe_ideation,recall_severe_ideation,permutation_pvalue,notes
+TF-IDF + Logistic Regression,repeated_cv,full_processed_dataset,0.7762,0.01,0.7251,0.0109,0.7747,0.0099,,,,,,,,"5-fold, 3-repeat RepeatedStratifiedKFold"
+TF-IDF + LinearSVC,repeated_cv,full_processed_dataset,0.7616,0.0077,0.7059,0.0096,0.7584,0.0082,,,,,,,,"5-fold, 3-repeat RepeatedStratifiedKFold"
+TwitterRoBERTa + Random Forest,repeated_cv,full_processed_dataset,0.76,0.0071,0.6955,0.0085,0.7503,0.0076,,,,,,,,"5-fold, 3-repeat RepeatedStratifiedKFold"
+TF-IDF + Logistic Regression,holdout,full_processed_dataset,0.7841,,0.7355,,0.7829,,0.9059,0.9225,0.6347,0.6452,0.6721,0.634,,Fixed 80/20 stratified holdout
+TF-IDF + LinearSVC,holdout,full_processed_dataset,0.77,,0.7175,,0.7673,,0.8891,0.9235,0.6089,0.5975,0.6651,0.6231,,Fixed 80/20 stratified holdout
+TwitterRoBERTa + Random Forest,holdout,full_processed_dataset,0.7596,,0.6969,,0.7517,,0.8614,0.9501,0.5957,0.5685,0.6684,0.5534,,Official evaluation mode (Tesla T4/full dataset)
+TF-IDF + Logistic Regression,permutation_test,full_processed_dataset,,,0.7221,,,,,,,,,,0.032258,Permutation test on macro F1 for TF-IDF + Logistic Regression
