@@ -40,12 +40,14 @@ We scrape posts from `r/SuicideWatch`, `r/depression`, and a neutral baseline `r
 
 ### Highlights
 
-- **10,000-post raw extraction target** with a **9,800-row processed snapshot** after minimum-length filtering
+- **10,000-post raw extraction target** with a **9,607-row deduplicated processed snapshot**
 - Tertiary severity classification (Control, Moderate MDD, Severe Ideation)
-- **Classical NLP:** TF-IDF + Logistic Regression
+- **Classical NLP:** TF-IDF + Logistic Regression + LinearSVC
 - **Deep Representation:** `twitter-roberta-base` + Random Forest
+- **Stronger evaluation:** fixed holdout split + 5-fold, 3-repeat repeated cross-validation
+- **Dataset QA artifacts:** duplicate removal, `text_hash`, and `dataset_summary.csv`
 - **Explainable AI (XAI):** SHAP integration for clinical transparency
-- **Comprehensive EDA** — DSM-5 symptom keyword analysis, word clouds, sentiment distributions, post length profiling, and bigram analysis
+- **Comprehensive EDA** — DSM-5 symptom keyword analysis, word clouds, sentiment distributions, post length profiling, bigrams, learning curve, and error analysis
 - **Hardware-agnostic** notebook — auto-detects CUDA GPU or falls back to CPU
 - **Automated quarterly refresh** via GitHub Actions CI/CD
 
@@ -53,14 +55,18 @@ We scrape posts from `r/SuicideWatch`, `r/depression`, and a neutral baseline `r
 
 ## Key Results
 
-*(Note: Quantitative metrics below reflect the current three-class severity setup. Sparse TF-IDF remained the stronger baseline, while the transformer track was updated from older clinical-note models to the social-media-trained `cardiffnlp/twitter-roberta-base`.)*
+The upgraded notebook now generates a synchronized evaluation artifact instead of relying only on one historical split:
 
-| Model | Accuracy | Macro F1 | Weighted F1 | Precision (Severe) |
-|:---|:---:|:---:|:---:|:---:|
-| **TF-IDF + Logistic Regression** | **78.7%** | 0.74 | 0.79 | 65% |
-| TwitterRoBERTa + Random Forest | 74.2% | 0.67 | 0.73 | 65% |
+- **Fixed holdout outputs** for `TF-IDF + Logistic Regression`, `TF-IDF + LinearSVC`, and `TwitterRoBERTa + Random Forest`
+- **Repeated CV summary** with mean ± std for accuracy, macro F1, and weighted F1
+- **Permutation-test p-value** and **learning curve** for the main TF-IDF baseline
+- **Exported artifacts** in `data/processed/` for report synchronization:
+  - `dataset_summary.csv`
+  - `results_summary.csv`
+  - `error_analysis_holdout.csv`
+  - `top_tokens_by_class.csv`
 
-> **Explainability Milestone:** The complete analytical ensemble relies on **SHAP (SHapley Additive exPlanations)** mapped to the sparse Logistic Regression model. This isolates specific dialectal indicators driving high-risk categorizations (like *Severe Ideation*) to avoid black-box psychiatric evaluations.
+> **Source of truth:** after each notebook run, the latest metrics should be taken from `results_summary.csv`, not from hard-coded markdown tables.
 
 ### EDA and Language Pattern Detection
 
@@ -91,8 +97,9 @@ flowchart TD
         A3["r/CasualConversation"] --> A
     end
 
-    B --> C["src/pipeline.py\nRegex · NLTK · VADER"]
-    C --> D["reddit_mdd_cleaned.csv\ncurrent snapshot: 9,800 posts"]
+    B --> C["src/pipeline.py\nQA · Regex · NLTK · VADER"]
+    C --> D["reddit_mdd_cleaned.csv\ncurrent snapshot: 9,607 posts"]
+    C --> D2["dataset_summary.csv\nQA artifact"]
 
     D --> E["Track A — Classical NLP\n(CPU)"]
     D --> F["Track B — Deep NLP\n(GPU / CPU)"]
@@ -100,6 +107,7 @@ flowchart TD
     subgraph TrackA ["Baseline Track"]
         E --> E1["TF-IDF Vectorizer\n5,000 features · unigrams + bigrams"]
         E1 --> E2["Logistic Regression\nbalanced class weights"]
+        E1 --> E3["LinearSVC\nbalanced class weights"]
     end
 
     subgraph TrackB ["Advanced Track"]
@@ -107,8 +115,10 @@ flowchart TD
         F1 --> F2["Random Forest\n100 estimators"]
     end
 
-    E2 --> G["Evaluation\nAccuracy · Macro F1 · Weighted F1 · Confusion Matrix"]
+    E2 --> G["Evaluation\nHoldout + Repeated CV\nPermutation Test · Learning Curve"]
+    E3 --> G
     F2 --> G
+    G --> G2["results_summary.csv\nsynced metrics artifact"]
 
     D --> H["EDA & Language Patterns"]
 
@@ -135,12 +145,12 @@ BDA-MDD-Reddit-NLP/
 │
 ├── data/
 │   ├── raw/                                  # Raw scraped CSVs
-│   └── processed/                            # Cleaned & labeled dataset
+│   └── processed/                            # Cleaned & labeled dataset + QA/eval artifacts
 │       └── reddit_mdd_cleaned.csv
 │
 ├── notebooks/
 │   ├── Assignment_1_PRAW_Extraction.ipynb    # Legacy notebook from the original PRAW plan
-│   └── 02_text_classification_models.ipynb   # ML classification (TF-IDF & TwitterRoBERTa)
+│   └── 02_text_classification_models.ipynb   # QA, ML comparison, CV, SHAP, and EDA
 │
 ├── src/
 │   ├── scraper.py                            # PullPush API client
@@ -205,30 +215,41 @@ python src/pipeline.py
 
 This will:
 1. Attempt to scrape 10,000 posts via the PullPush proxy API
-2. Clean text (regex, stopword removal, lowercasing)
-3. Drop posts with fewer than 5 cleaned words and compute VADER sentiment scores
-4. Export `data/raw/reddit_raw.csv` and `data/processed/reddit_mdd_cleaned.csv`
+2. Deduplicate by `post_id` and exact `title+selftext`
+3. Create a deterministic `text_hash` for leakage-aware downstream analysis
+4. Clean text (regex, stopword removal, lowercasing)
+5. Drop posts with fewer than 5 cleaned words and compute VADER sentiment scores
+6. Export `data/raw/reddit_raw.csv`, `data/processed/reddit_mdd_cleaned.csv`, and `data/processed/dataset_summary.csv`
 
 ### Assignment 2 — Text Classification Models
 
 #### Option A: Google Colab *(Recommended)*
 
 1. Open [`notebooks/02_text_classification_models.ipynb`](notebooks/02_text_classification_models.ipynb) in Google Colab
-2. Add a Colab Secret named `GITHUB_TOKEN` with your GitHub **Personal Access Token**
-3. Set runtime to **T4 GPU** → *Runtime > Change runtime type > T4 GPU*
-4. **⚠️ Important:** Update the first code cell with your own GitHub identity:
-   ```python
-   REPO_URL = f"https://{GITHUB_TOKEN}@github.com/<YOUR_USERNAME>/BDA-MDD-Reddit-NLP.git"
-   !git config --global user.email "<YOUR_EMAIL>"
-   !git config --global user.name  "<YOUR_USERNAME>"
-   ```
+2. Set runtime to **T4 GPU** via *Runtime > Change runtime type > T4 GPU*
+3. Run the first setup cell. It now:
+   - clones the repo automatically,
+   - installs the notebook-only Colab dependencies,
+   - detects whether a CUDA GPU is available,
+   - and keeps the full processed dataset for the official TwitterRoBERTa evaluation path.
+4. Add Colab Secrets only if you want GitHub write-back from Colab:
+   - `GITHUB_TOKEN` for authenticated clone/push
+   - `GITHUB_USERNAME` if you are using a fork instead of the default repository owner
+   - `GITHUB_REPO` if your fork/repository name differs from `BDA-MDD-Reddit-NLP`
+   - `GIT_USER_NAME` and `GIT_USER_EMAIL` if you want to commit and push artifacts from Colab
 5. Run all cells
+6. If you want the generated CSV artifacts committed back to GitHub, set `AUTO_PUSH_ARTIFACTS = True` in the final optional sync cell and run it after reviewing the outputs
 
 #### Option B: Local Execution
 
 Simply open the notebook locally. The hardware-detection logic will:
 - Automatically fall back to CPU
 - Subsample the dataset to **2,000 rows** for faster processing
+
+The upgraded notebook also exports:
+- `data/processed/results_summary.csv`
+- `data/processed/error_analysis_holdout.csv`
+- `data/processed/top_tokens_by_class.csv`
 
 ### Quarterly Automation (CI/CD)
 
@@ -263,12 +284,13 @@ This uses the [`schedule`](https://pypi.org/project/schedule/) library and runs 
 
 | Property | Value |
 |:---|:---|
-| **Current Committed Snapshot** | 9,800 processed rows |
-| **Label Distribution** | `Control` 4,992 · `Moderate MDD` 2,458 · `Severe Ideation` 2,350 |
+| **Current Committed Snapshot** | 9,607 deduplicated processed rows |
+| **Label Distribution** | `Control` 4,903 · `Moderate MDD` 2,408 · `Severe Ideation` 2,296 |
 | **Raw Extraction Target** | `r/depression` 2,500 · `r/SuicideWatch` 2,500 · `r/CasualConversation` 5,000 |
-| **Features** | `post_id`, `subreddit`, `timestamp`, `title`, `selftext`, `score`, `num_comments`, `author`, `label`, `selftext_cleaned`, `word_count`, `sentiment_score` |
+| **Features** | `post_id`, `subreddit`, `timestamp`, `title`, `selftext`, `score`, `num_comments`, `author`, `label`, `selftext_cleaned`, `word_count`, `sentiment_score`, `text_hash` |
+| **QA Artifact** | `data/processed/dataset_summary.csv` |
 | **Source** | [PullPush.io](https://pullpush.io) (Pushshift proxy) |
-| **Split** | 80% train / 20% test (stratified, in the notebook experiments) |
+| **Evaluation Protocol** | Fixed 80/20 stratified holdout + 5-fold, 3-repeat repeated CV |
 
 ---
 
@@ -280,11 +302,21 @@ This uses the [`schedule`](https://pypi.org/project/schedule/) library and runs 
 | **Data** | pandas · NumPy |
 | **NLP** | NLTK · regex · VADER Sentiment · wordcloud |
 | **Embeddings** | [TwitterRoBERTa](https://huggingface.co/cardiffnlp/twitter-roberta-base) (HuggingFace Transformers) |
-| **ML** | scikit-learn (Logistic Regression, Random Forest, TF-IDF) |
+| **ML** | scikit-learn (Logistic Regression, LinearSVC, Random Forest, TF-IDF) |
 | **Deep Learning** | PyTorch (CUDA / CPU) |
 | **Automation** | GitHub Actions CI/CD + `schedule` fallback |
 | **Environment** | venv · pip |
 | **Version Control** | Git + GitHub |
+
+---
+
+## Limitations
+
+- **Proxy labels only:** subreddit origin is used as a practical course-project label, not a medical diagnosis.
+- **Self-report is noisy:** posts can mix severity cues, which especially affects Moderate MDD vs Severe Ideation.
+- **Academic use only:** this project supports coursework, NLP experimentation, and comparative evaluation, not clinical screening or deployment.
+- **Privacy and ethics matter:** the source text comes from sensitive mental-health contexts and should be handled carefully in demos and reports.
+- **Transformer fallback mode:** local CPU runs use a 2,000-row sample for practicality; GPU/Colab remains the preferred path for official dense-model evaluation.
 
 ---
 

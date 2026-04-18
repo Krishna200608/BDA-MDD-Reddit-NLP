@@ -32,11 +32,13 @@ We implemented a `PullPushScraper` class in `src/scraper.py` using the `requests
 
 ### 1.3 Data Cleaning Pipeline
 The preprocessing pipeline lives in `src/pipeline.py`.
+- **QA hardening:** duplicate `post_id` rows are removed first, followed by exact duplicate `title+selftext` rows.
+- **Leakage-aware identifier:** a deterministic `text_hash` is created from `title+selftext`.
 - **Normalization:** lowercase conversion.
 - **Regex cleaning:** URL removal, newline stripping, non-alphabet filtering, and multi-space collapsing.
 - **Stop words:** NLTK English stopword filtering.
 - **Retention rule:** posts with fewer than 5 cleaned words are dropped.
-- **Outputs:** `data/raw/reddit_raw.csv` and `data/processed/reddit_mdd_cleaned.csv`.
+- **Outputs:** `data/raw/reddit_raw.csv`, `data/processed/reddit_mdd_cleaned.csv`, and `data/processed/dataset_summary.csv`.
 
 ### 1.4 Feature Engineering
 We compute a baseline sentiment feature using **VADER** on the original uncleaned `selftext`.
@@ -65,18 +67,26 @@ To study symptom and emotional language patterns, the notebook runs six explorat
 
 ### 2.2 Dual-Track Machine Learning Pipeline
 To evaluate predictive configurations, we designed a complementary experimental track architecture:
-- **Track A (Sparse Baseline — Classical AI):** A **TF-IDF Vectorizer** captured the top 5,000 predictive unigrams and bigrams. This was paired with a **Logistic Regression** classifier operating on balanced class weights.
+- **Track A (Sparse Baseline — Classical AI):** A **TF-IDF Vectorizer** captured the top 5,000 predictive unigrams and bigrams. This is now paired with two sparse baselines:
+  - **Logistic Regression** with balanced class weights
+  - **LinearSVC** with balanced class weights
 - **Track B (Dense Text Modeling — Deep AI):** Text sequences passed through HuggingFace's **TwitterRoBERTa** (`cardiffnlp/twitter-roberta-base`). We extracted 768-dimensional dense representations and fed them into a **Random Forest Classifier** (100 estimators).
 
-*Performance conclusion:* The classical TF-IDF model outperformed the transformer embedding track on the current three-class setup:
-- **TF-IDF + Logistic Regression:** 78.7% accuracy
-- **TwitterRoBERTa + Random Forest:** 74.2% accuracy
-
-See `docs/methods_and_results.md` for the full result summary.
-
 ### 2.3 Execution Profile
-- The notebook can use CUDA when available.
+- The official dense-model path is **Google Colab with a T4 GPU**, which keeps the full processed dataset for TwitterRoBERTa feature extraction.
+- The notebook auto-detects CUDA and selects a larger embedding batch size on T4 hardware.
 - For local CPU-only runs, it subsamples to 2,000 rows to keep execution practical.
+
+### 2.4 Evaluation Upgrades
+The current notebook now strengthens the evidence beyond one train/test split:
+- **Fixed 80/20 stratified holdout** for demo confusion matrices
+- **5-fold, 3-repeat `RepeatedStratifiedKFold`** for mean ± std metric reporting
+- **Permutation test** for the TF-IDF + Logistic Regression baseline
+- **Learning curve** for the main sparse baseline
+- **Error analysis export** for representative holdout mistakes
+- **Model-card preprocessing** for TwitterRoBERTa, replacing usernames with `@user` and links with `http`
+
+The notebook exports synchronized evaluation artifacts to `data/processed/`, with `results_summary.csv` as the intended metrics source of truth after each run.
 
 ---
 
@@ -91,6 +101,7 @@ To fulfill the automation requirement, the repo supports two update paths:
 ## 4. Archival Outputs
 Generated assets serving the downstream project operations:
 - `data/raw/reddit_raw.csv` — the raw scrape output, targeting 10,000 posts before post-cleaning filters.
-- `data/processed/reddit_mdd_cleaned.csv` — the processed dataset with metadata, labels, cleaned text, `word_count`, and `sentiment_score`.
-- `notebooks/02_text_classification_models.ipynb` — the current classification, EDA, and SHAP notebook.
+- `data/processed/reddit_mdd_cleaned.csv` — the processed dataset with metadata, labels, cleaned text, `word_count`, `sentiment_score`, and `text_hash`.
+- `data/processed/dataset_summary.csv` — a compact QA summary covering duplicate removal, row counts, label counts, missingness, length stats, and date range.
+- `notebooks/02_text_classification_models.ipynb` — the current classification, CV, SHAP, error analysis, and EDA notebook.
 - `notebooks/Assignment_1_PRAW_Extraction.ipynb` — a legacy notebook from the original PRAW-based assignment plan, retained for coursework history rather than the production PullPush pipeline.

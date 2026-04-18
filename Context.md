@@ -84,6 +84,7 @@
 | `selftext_cleaned` | `str` | Lowercased, regex-cleaned, stopwords removed |
 | `word_count` | `int` | Word count of cleaned text |
 | `sentiment_score` | `float` | VADER compound sentiment score |
+| `text_hash` | `str` | Deterministic hash of `title+selftext` for QA and leakage-aware analysis |
 
 ## 8. Project Directory Structure (Current)
 
@@ -138,6 +139,8 @@ BDA-MDD-Reddit-NLP/
 | 2026-04-10 | Tertiary Severity Mapping | Upgraded labeling from binary to Control vs. Moderate vs. Severe |
 | 2026-04-10 | Gated Repo Fix (TwitterRoBERTa) | Switched from mental-roberta to cardiffnlp/twitter-roberta-base to prevent 401 Gated Error on Colab |
 | 2026-04-10 | PyTorch TQDM Acceleration | Rewrote embedding generation from apply() to batched iteration |
+| 2026-04-18 | Dataset QA Hardening | Added duplicate removal, `text_hash`, and `dataset_summary.csv` generation to reduce leakage risk |
+| 2026-04-18 | Evaluation Upgrade | Added repeated CV, LinearSVC baseline, permutation test, learning curve, and holdout error analysis |
 
 ## 11. Risks & Mitigations
 

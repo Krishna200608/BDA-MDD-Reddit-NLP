@@ -17,32 +17,44 @@ We employed a dual-track analytical architecture, contrasting classical sparse t
 - **Model**: Logistic Regression utilizing a 'balanced' class-weights parameter to counteract any minor asymmetries in class distributions.
 - **Hardware Profile**: Pure CPU Execution. 
 
+### 1.1(b) Additional Sparse Baseline: TF-IDF + LinearSVC
+- **Vectorization**: The same TF-IDF feature space is reused to keep the comparison fair.
+- **Model**: Linear Support Vector Classifier with balanced class weights.
+- **Purpose**: This provides a stronger non-probabilistic classical baseline without expanding the project scope beyond the course expectation.
+
 ### 1.2 Deep NLP Track: TwitterRoBERTa + Random Forest
 - **Vectorization**: We passed raw text through `cardiffnlp/twitter-roberta-base`, a transformer model pre-trained on large-scale social-media text. This yields 768-dimensional dense vectors that are better suited to informal online language than clinical-note models.
+- **Preprocessing**: Prior to tokenization, usernames are normalized to `@user` and links to `http`, following the model-card recommendation.
 - **Model**: A Random Forest classifier (100 estimators; max-depth untethered) mapped to the continuous vector mappings of the `[CLS]` token hidden states.
 - **Hardware Profile**: Hybrid CPU/CUDA via Google Colab.
+
+### 1.3 Data Quality and Leakage Controls
+- Duplicate rows are removed in two stages: duplicate `post_id`, then exact duplicate `title+selftext`.
+- A deterministic `text_hash` column is created from `title+selftext`.
+- A compact QA artifact (`data/processed/dataset_summary.csv`) records row counts, duplicate removals, missing values, label counts, length statistics, and date range.
 
 ---
 
 ## 2. Experimental Results
 
-We evaluated the pipelines on a fixed 80/20 train-test split under the current three-class severity formulation.
+We now evaluate the pipelines with a **two-layer protocol**:
+- **Fixed 80/20 stratified holdout** for confusion matrices, classwise precision/recall, and error analysis
+- **5-fold, 3-repeat `RepeatedStratifiedKFold`** for mean ± std reporting of accuracy, macro F1, and weighted F1
 
-### 2.1 Classical Baseline (TF-IDF Logistic Regression)
-*The sparse-matrix representation performs exceptionally well across 3 classes, likely due to distinct, rigid vocabulary deviations found between ideation forums (r/SuicideWatch) versus general depression boards.*
+### 2.1 Exported Metrics Source of Truth
+Rather than maintaining hard-coded markdown metrics that can drift as the dataset refreshes, the upgraded notebook exports a synchronized artifact:
+- `data/processed/results_summary.csv`
 
-- **Overall Accuracy:** 78.7%
-- **Macro Avg F1-Score:** 0.74
-- **Weighted Avg F1-Score:** 0.79
-- **Precision (Severe Ideation):** 65% | **Recall:** 67%
+This file contains:
+- repeated-CV mean ± std metrics for the main models;
+- holdout accuracy, macro F1, weighted F1, and per-class precision/recall;
+- the permutation-test p-value for the TF-IDF + Logistic Regression baseline.
 
-### 2.2 Deep Representation (TwitterRoBERTa Random Forest)
-*Swapping from the hospital-trained Bio_ClinicalBERT to the social-media-trained TwitterRoBERTa improved alignment with informal online language and slang, making the dense representation track more appropriate for Reddit-style text.*
-
-- **Overall Accuracy:** 74.2%
-- **Macro Avg F1-Score:** 0.67
-- **Weighted Avg F1-Score:** 0.73
-- **Precision (Severe Ideation):** 65% | **Recall:** 52%
+### 2.2 Additional Evaluation Signals
+- **Permutation test**: verifies that the main sparse baseline performs meaningfully above chance.
+- **Learning curve**: shows whether additional quarterly data is likely to keep helping the classifier.
+- **Error analysis**: exports representative holdout mistakes to `data/processed/error_analysis_holdout.csv`.
+- **Interpretability artifact**: exports top influential tokens per class to `data/processed/top_tokens_by_class.csv`.
 
 ### 2.3 Explainable AI (SHAP Visualization)
 
@@ -110,4 +122,13 @@ In alignment with Deliverable requirements, we have provisioned an execution scr
 Utilizing the static `schedule` Python daemon, this script operates persistently to spin up the data-scraper pipelines and data cleansing functions completely autonomously every **90 days** recursively, ensuring the Machine Learning pipelines consistently ingest fresh modern syntactic data.
 
 Additionally, a GitHub Actions CI/CD workflow (`.github/workflows/quarterly_update.yml`) provides cloud-based automation that refreshes the dataset on the 1st of January, April, July, and October without requiring local machine uptime.
+
+---
+
+## 5. Limitations and Responsible Use
+
+- The labels are **course-project proxy labels** derived from subreddit source, not clinician-verified diagnoses.
+- Self-reported social-media text contains noise, ambiguity, sarcasm, and cross-over language between adjacent severity tiers.
+- The outputs are suitable for **academic NLP analysis and classroom evaluation**, not for real-world mental-health triage.
+- The source data concerns sensitive personal experiences, so qualitative examples should be handled with privacy and ethical caution in demos and reports.
 

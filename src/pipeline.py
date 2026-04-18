@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import re
 import warnings
+import hashlib
 from pathlib import Path
 from typing import Final
 
@@ -24,6 +25,7 @@ URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"http\S+|www\.\S+")
 NON_ALPHA_PATTERN: Final[re.Pattern[str]] = re.compile(r"[^a-z\s]")
 MULTISPACE_PATTERN: Final[re.Pattern[str]] = re.compile(r"\s+")
 MIN_WORD_COUNT: Final[int] = 5
+DATASET_SUMMARY_FILENAME: Final[str] = "dataset_summary.csv"
 
 
 warnings.filterwarnings("ignore")
@@ -50,8 +52,44 @@ def calculate_sentiment(text: object, analyzer: SentimentIntensityAnalyzer) -> f
     return float(analyzer.polarity_scores(str(text))["compound"])
 
 
+def build_text_hash(title: object, selftext: object) -> str:
+    combined_text = f"{str(title).strip()} || {str(selftext).strip()}"
+    return hashlib.sha256(combined_text.encode("utf-8")).hexdigest()
+
+
 def resolve_base_dir() -> Path:
     return Path(__file__).resolve().parent.parent
+
+
+def ensure_required_columns(df: pd.DataFrame) -> pd.DataFrame:
+    required_columns = ["post_id", "subreddit", "timestamp", "title", "selftext", "score", "num_comments", "author"]
+    for column in required_columns:
+        if column not in df.columns:
+            df[column] = ""
+
+    df["title"] = df["title"].fillna("").astype(str)
+    df["selftext"] = df["selftext"].fillna("").astype(str)
+    df["author"] = df["author"].fillna("").astype(str)
+    return df
+
+
+def deduplicate_posts(df: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, int]]:
+    df = df.copy()
+    df["title_selftext_key"] = df["title"] + " || " + df["selftext"]
+
+    duplicate_post_id_rows = int(df["post_id"].duplicated().sum())
+
+    df = df.drop_duplicates(subset=["post_id"], keep="first")
+    rows_after_post_id_dedup = len(df)
+    duplicate_title_selftext_rows = int(df.duplicated(subset=["title_selftext_key"]).sum())
+    df = df.drop_duplicates(subset=["title_selftext_key"], keep="first").drop(columns=["title_selftext_key"])
+
+    removal_summary = {
+        "duplicate_post_id_rows_removed": duplicate_post_id_rows,
+        "rows_after_post_id_dedup": rows_after_post_id_dedup,
+        "duplicate_title_selftext_rows_removed": duplicate_title_selftext_rows,
+    }
+    return df.reset_index(drop=True), removal_summary
 
 
 def prepare_text_features(df: pd.DataFrame, stop_words: set[str]) -> pd.DataFrame:
@@ -72,6 +110,59 @@ def add_sentiment_scores(df: pd.DataFrame, analyzer: SentimentIntensityAnalyzer)
     ]
     df["sentiment_score"] = sentiment_scores
     return df
+
+
+def write_dataset_summary(
+    summary_path: Path,
+    *,
+    rows_before_qa: int,
+    rows_after_qa: int,
+    rows_after_length_filter: int,
+    dropped_short_posts: int,
+    removal_summary: dict[str, int],
+    df_final: pd.DataFrame,
+) -> None:
+    timestamp_series = pd.to_datetime(df_final["timestamp"], errors="coerce")
+    summary_rows: list[dict[str, object]] = [
+        {"section": "rows", "metric": "rows_before_qa", "value": rows_before_qa},
+        {"section": "rows", "metric": "rows_after_qa", "value": rows_after_qa},
+        {"section": "rows", "metric": "rows_after_length_filter", "value": rows_after_length_filter},
+        {"section": "rows", "metric": "dropped_short_posts", "value": dropped_short_posts},
+        {
+            "section": "duplicates",
+            "metric": "duplicate_post_id_rows_removed",
+            "value": removal_summary["duplicate_post_id_rows_removed"],
+        },
+        {
+            "section": "duplicates",
+            "metric": "duplicate_title_selftext_rows_removed",
+            "value": removal_summary["duplicate_title_selftext_rows_removed"],
+        },
+        {"section": "missing", "metric": "missing_selftext", "value": int(df_final["selftext"].isna().sum())},
+        {
+            "section": "missing",
+            "metric": "missing_selftext_cleaned",
+            "value": int(df_final["selftext_cleaned"].isna().sum()),
+        },
+        {"section": "length", "metric": "word_count_min", "value": int(df_final["word_count"].min())},
+        {"section": "length", "metric": "word_count_median", "value": float(df_final["word_count"].median())},
+        {"section": "length", "metric": "word_count_mean", "value": round(float(df_final["word_count"].mean()), 2)},
+        {
+            "section": "dates",
+            "metric": "timestamp_min",
+            "value": timestamp_series.min().isoformat() if not timestamp_series.dropna().empty else "",
+        },
+        {
+            "section": "dates",
+            "metric": "timestamp_max",
+            "value": timestamp_series.max().isoformat() if not timestamp_series.dropna().empty else "",
+        },
+    ]
+
+    for label, count in df_final["label"].value_counts().sort_index().items():
+        summary_rows.append({"section": "labels", "metric": f"label_count_{label}", "value": int(count)})
+
+    pd.DataFrame(summary_rows).to_csv(summary_path, index=False)
 
 
 def main() -> None:
@@ -97,7 +188,18 @@ def main() -> None:
     logging.info("Total Extracted Control Posts: %s", df_control.shape[0])
 
     df = pd.concat([df_mdd, df_control], ignore_index=True)
+    df = ensure_required_columns(df)
     df = df.sample(frac=1, random_state=42).reset_index(drop=True)
+    rows_before_qa = len(df)
+    df, removal_summary = deduplicate_posts(df)
+    rows_after_qa = len(df)
+    df["text_hash"] = [build_text_hash(title, selftext) for title, selftext in zip(df["title"], df["selftext"])]
+
+    logging.info(
+        "QA deduplication removed %s duplicate post_id rows and %s duplicate title+selftext rows.",
+        removal_summary["duplicate_post_id_rows_removed"],
+        removal_summary["duplicate_title_selftext_rows_removed"],
+    )
 
     base_dir = resolve_base_dir()
     raw_dir = base_dir / "data" / "raw"
@@ -122,9 +224,20 @@ def main() -> None:
     processed_dir = base_dir / "data" / "processed"
     processed_dir.mkdir(parents=True, exist_ok=True)
     clean_path = processed_dir / "reddit_mdd_cleaned.csv"
+    summary_path = processed_dir / DATASET_SUMMARY_FILENAME
     df_clean.to_csv(clean_path, index=False)
+    write_dataset_summary(
+        summary_path,
+        rows_before_qa=rows_before_qa,
+        rows_after_qa=rows_after_qa,
+        rows_after_length_filter=len(df_clean),
+        dropped_short_posts=dropped,
+        removal_summary=removal_summary,
+        df_final=df_clean,
+    )
 
     logging.info("Saved Processed Dataset to %s", clean_path)
+    logging.info("Saved Dataset Summary to %s", summary_path)
     logging.info("Pipeline Execution Completed Successfully.")
 
 

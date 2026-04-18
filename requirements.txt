@@ -2,6 +2,8 @@ requests
 pandas
 numpy
 jupyter
+matplotlib
+seaborn
 nltk
 vaderSentiment
 tqdm
