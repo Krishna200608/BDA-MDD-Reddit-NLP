@@ -33,6 +33,16 @@ We employed a dual-track analytical architecture, contrasting classical sparse t
 - A deterministic `text_hash` column is created from `title+selftext`.
 - A compact QA artifact (`data/processed/dataset_summary.csv`) records row counts, duplicate removals, missing values, label counts, length statistics, and date range.
 
+### 1.4 Latest QA-Validated Snapshot
+- Rows before QA: `9,800`
+- Rows after QA and length filtering: `9,607`
+- Duplicate rows removed: `145` duplicate `post_id` rows and `48` duplicate `title+selftext` rows
+- Date range: `2025-03-05T06:40:41` to `2025-05-19T18:11:58`
+- Label counts:
+  - `Control`: `4,903`
+  - `Moderate MDD`: `2,408`
+  - `Severe Ideation`: `2,296`
+
 ---
 
 ## 2. Experimental Results
@@ -50,69 +60,107 @@ This file contains:
 - holdout accuracy, macro F1, weighted F1, and per-class precision/recall;
 - the permutation-test p-value for the TF-IDF + Logistic Regression baseline.
 
-### 2.2 Additional Evaluation Signals
-- **Permutation test**: verifies that the main sparse baseline performs meaningfully above chance.
-- **Learning curve**: shows whether additional quarterly data is likely to keep helping the classifier.
-- **Error analysis**: exports representative holdout mistakes to `data/processed/error_analysis_holdout.csv`.
-- **Interpretability artifact**: exports top influential tokens per class to `data/processed/top_tokens_by_class.csv`.
+### 2.2 Repeated Cross-Validation Results
 
-### 2.3 Explainable AI (SHAP Visualization)
+| Model | Accuracy (mean ± std) | Macro F1 (mean ± std) | Weighted F1 (mean ± std) |
+|:---|:---:|:---:|:---:|
+| **TF-IDF + Logistic Regression** | **0.7762 ± 0.0100** | **0.7251 ± 0.0109** | **0.7747 ± 0.0099** |
+| TF-IDF + LinearSVC | 0.7616 ± 0.0077 | 0.7059 ± 0.0096 | 0.7584 ± 0.0082 |
+| TwitterRoBERTa + Random Forest | 0.7600 ± 0.0071 | 0.6955 ± 0.0085 | 0.7503 ± 0.0076 |
+
+The repeated-CV ranking shows that the sparse **TF-IDF + Logistic Regression** baseline remained the strongest overall configuration on the current three-class dataset. The extra `LinearSVC` baseline was competitive but did not surpass Logistic Regression, and the dense TwitterRoBERTa feature-extraction track remained viable while trailing the best sparse model on macro F1.
+
+### 2.3 Fixed Holdout Results
+
+| Model | Accuracy | Macro F1 | Weighted F1 | Precision (Control) | Recall (Control) | Precision (Moderate) | Recall (Moderate) | Precision (Severe) | Recall (Severe) |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **TF-IDF + Logistic Regression** | **0.7841** | **0.7355** | **0.7829** | 0.9059 | 0.9225 | 0.6347 | 0.6452 | **0.6721** | **0.6340** |
+| TF-IDF + LinearSVC | 0.7700 | 0.7175 | 0.7673 | 0.8891 | 0.9235 | 0.6089 | 0.5975 | 0.6651 | 0.6231 |
+| TwitterRoBERTa + Random Forest | 0.7596 | 0.6969 | 0.7517 | 0.8614 | 0.9501 | 0.5957 | 0.5685 | 0.6684 | 0.5534 |
+
+The holdout split tells the same story as repeated CV: Logistic Regression is the best overall model on accuracy and macro F1, while the RoBERTa + Random Forest track still offers a strong social-media-aware baseline under the official **Tesla T4 / full-dataset** evaluation mode.
+
+### 2.4 Additional Evaluation Signals
+- **Permutation test**: the TF-IDF + Logistic Regression baseline achieved macro F1 `0.7221` with `p = 0.032258`, indicating performance above chance at the 5% level.
+- **Learning curve**: a dedicated learning-curve figure is now produced for the main sparse baseline and can be reused directly in the report/demo.
+- **Error analysis**: representative holdout mistakes are exported to `data/processed/error_analysis_holdout.csv`.
+- **Interpretability artifact**: top influential tokens per class are exported to `data/processed/top_tokens_by_class.csv`.
+
+### 2.5 Error Analysis Summary
+
+The holdout error-analysis export contains `415` misclassified examples. The dominant confusions were between adjacent severity tiers:
+- `Severe Ideation → Moderate MDD`: `123`
+- `Moderate MDD → Severe Ideation`: `122`
+- `Control → Moderate MDD`: `56`
+- `Moderate MDD → Control`: `49`
+- `Severe Ideation → Control`: `45`
+- `Control → Severe Ideation`: `20`
+
+This pattern is consistent with the qualitative notes in the artifact: the hardest cases are not cleanly separated by topic alone, but by **intensity** and the presence or absence of explicit ideation vocabulary. The most frequent explanation strings in the exported file highlight overlap around words like `feel`, `help`, `depression`, and generic distress phrasing.
+
+### 2.6 Explainable AI (SHAP Visualization)
 
 To avoid "black-box" clinical predictions, SHAP (SHapley Additive exPlanations) integration was introduced.
-Local Force Plots and Global Summary Plots were computed for the Logistic Regression pipeline. This allows practitioners to visually confirm exactly which vocabulary terms (e.g., standard symptom keywords vs ideation slang) pushed a generic user's text toward a 'Severe Ideation' classification, ensuring the model avoided overfitting.
+The notebook computes SHAP summaries for the Logistic Regression pipeline and also exports the strongest class-specific tokens to `data/processed/top_tokens_by_class.csv`. The latest run surfaced the following high-signal vocabulary:
+- **Control**: `curious`, `lol`, `new`, `whats`, `coffee`, `share`, `chat`
+- **Moderate MDD**: `depression`, `depressed`, `feel`, `advice`, `hate`, `therapy`, `help`
+- **Severe Ideation**: `suicide`, `suicidal`, `die`, `kill`, `pain`, `attempt`, `anymore`
+
+These tokens align with the class definitions and also explain the main error pattern: moderate and severe posts frequently share depressive vocabulary, while explicit self-harm and ideation terms provide the clearest separation into the Severe Ideation tier.
 
 ---
 
 ## 3. Exploratory Data Analysis and Language Pattern Detection
 
-This section directly addresses the project objective of detecting *symptom and emotional language patterns* in MDD posts. Six complementary analyses were conducted on the full corpus.
+This section directly addresses the project objective of detecting *symptom and emotional language patterns* in Reddit posts across the three severity tiers. Six complementary analyses were conducted on the full corpus.
 
 ### 3.1 DSM-5 Symptom Keyword Frequency Analysis
 
-A curated list of 24 DSM-5-aligned MDD symptom keywords (e.g., *hopeless*, *worthless*, *suicide*, *insomnia*, *fatigue*, *guilt*, *empty*, *numb*) was compiled and compared between distress-related posts and the Control class.
+A curated list of 24 DSM-5-aligned symptom keywords (e.g., *hopeless*, *worthless*, *suicide*, *insomnia*, *fatigue*, *guilt*, *empty*, *numb*) was compiled and compared across the three labels.
 
 **Key Findings:**
-- MDD posts contain significantly higher average symptom keyword counts per post compared to Control posts.
-- A log-normalized heatmap reveals that keywords such as *depression*, *depressed*, *anxiety*, *die*, and *pain* have dramatically higher frequency in MDD posts while remaining comparatively rare in the Control class.
-- The keyword frequency differential validates the discriminative power of the TF-IDF baseline — these domain-specific terms provide strong classification signals.
+- The distress-related classes contain much higher symptom-keyword density than the Control class.
+- The strongest severe-tier cues include *suicide*, *suicidal*, *die*, and *pain*, while the moderate tier is dominated more by *depression* and *depressed*.
+- The keyword-frequency differential validates the discriminative power of the sparse baseline because these domain-specific terms provide strong classification signals.
 
 ### 3.2 Word Clouds (MDD vs. Control)
 
-Side-by-side word clouds were generated to provide an intuitive comparison of dominant distress-related vocabulary versus the Control baseline.
+Side-by-side word clouds were generated for all three classes to provide an intuitive comparison of everyday language, depressive discourse, and ideation-focused language.
 
 **Key Findings:**
-- The MDD word cloud is dominated by emotionally charged terms reflecting internal psychological distress (e.g., *feel*, *life*, *want*, *know*, *time*, *people*).
-- The Control word cloud shows more casual, action-oriented language characteristic of general conversation topics.
+- The Control cloud is more casual and conversational.
+- The Moderate MDD cloud is dominated by depressive self-description and help-seeking terms.
+- The Severe Ideation cloud concentrates the most urgent distress and self-harm-adjacent language.
 
 ### 3.3 VADER Sentiment Score Distribution
 
-A KDE (Kernel Density Estimate) comparison of VADER compound sentiment scores between distress-related posts and the Control baseline.
+A KDE (Kernel Density Estimate) comparison of VADER compound sentiment scores across the three labels.
 
 **Key Findings:**
-- MDD posts show a clear leftward shift in sentiment distribution, peaking in the negative sentiment range.
-- Control posts are more normally distributed around neutral-to-positive sentiment values.
-- This confirms that sentiment scoring is a valuable feature for distinguishing depressive text from general text.
+- Moderate and Severe posts both shift left into the negative range, with the Severe Ideation class concentrated most strongly in negative sentiment.
+- Control posts remain centered closer to neutral or mildly positive values.
+- This confirms that sentiment scoring is a useful supporting feature for distinguishing distress-related text from general text.
 
 ### 3.4 Post Length Distribution
 
-A violin plot comparing word counts of cleaned text between distress-related posts and the Control baseline.
+A word-count comparison was used to study expression length across the three severity tiers.
 
 **Key Findings:**
-- MDD posts tend to be longer on average, consistent with psychological research suggesting that depressive rumination leads to more verbose self-expression.
-- The Control class shows a tighter, more compact word count distribution.
+- Distress-related posts tend to be longer on average than Control posts, consistent with rumination-style self-expression.
+- Control text remains comparatively shorter and more compact.
 
 ### 3.5 Top Bigrams (MDD vs. Control)
 
-The top 15 bigrams (two-word phrases) were extracted to capture multi-word expressions that reflect distinct language patterns in distress-related text versus Control text.
+The top 15 bigrams (two-word phrases) were extracted to capture multi-word expressions that reflect distinct language patterns across Control, Moderate MDD, and Severe Ideation.
 
 **Key Findings:**
-- MDD bigrams capture emotional and cognitive distress phrases characteristic of depressive narratives.
+- Moderate and Severe bigrams capture emotional and cognitive distress phrases characteristic of depressive narratives.
 - Control bigrams reflect everyday conversational topics without clinical or emotional weight.
 - Bigram analysis reinforces the effectiveness of TF-IDF with `ngram_range=(1,2)` in capturing these discriminative multi-word patterns.
 
 ### 3.6 Summary
 
-The six EDA analyses collectively demonstrate that MDD-related Reddit posts exhibit measurably different linguistic signatures across multiple dimensions: higher symptom keyword density, more negative sentiment, greater post length, and distinctive multi-word patterns. These features align with and reinforce the classification results, confirming that the project successfully detects symptom and emotional language patterns associated with Major Depressive Disorder.
+The six EDA analyses collectively demonstrate that the three labels exhibit measurably different linguistic signatures across multiple dimensions: higher symptom keyword density, more negative sentiment, greater post length, and distinctive multi-word patterns in the two distress-related classes, with the strongest ideation terms concentrated in the Severe label. These features align with and reinforce the classification results, confirming that the project successfully detects symptom and emotional language patterns associated with Major Depressive Disorder severity.
 
 ---
 

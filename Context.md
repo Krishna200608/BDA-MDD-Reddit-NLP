@@ -141,8 +141,24 @@ BDA-MDD-Reddit-NLP/
 | 2026-04-10 | PyTorch TQDM Acceleration | Rewrote embedding generation from apply() to batched iteration |
 | 2026-04-18 | Dataset QA Hardening | Added duplicate removal, `text_hash`, and `dataset_summary.csv` generation to reduce leakage risk |
 | 2026-04-18 | Evaluation Upgrade | Added repeated CV, LinearSVC baseline, permutation test, learning curve, and holdout error analysis |
+| 2026-04-18 | Final Colab T4 Evaluation Run | Generated `results_summary.csv`, `error_analysis_holdout.csv`, and `top_tokens_by_class.csv` from the completed notebook run |
 
-## 11. Risks & Mitigations
+## 11. Latest Snapshot
+
+| Item | Value |
+|---|---|
+| **Rows before QA** | `9,800` |
+| **Rows after QA / modeling snapshot** | `9,607` |
+| **Duplicate `post_id` rows removed** | `145` |
+| **Exact duplicate `title+selftext` rows removed** | `48` |
+| **Date range** | `2025-03-05T06:40:41` → `2025-05-19T18:11:58` |
+| **Labels** | `Control` 4,903 · `Moderate MDD` 2,408 · `Severe Ideation` 2,296 |
+| **Best repeated-CV model** | `TF-IDF + Logistic Regression` — accuracy `0.7762 ± 0.0100`, macro F1 `0.7251 ± 0.0109` |
+| **Best holdout model** | `TF-IDF + Logistic Regression` — accuracy `0.7841`, macro F1 `0.7355` |
+| **Permutation test** | macro F1 `0.7221`, `p = 0.032258` |
+| **Generated artifacts** | `dataset_summary.csv`, `results_summary.csv`, `error_analysis_holdout.csv`, `top_tokens_by_class.csv` |
+
+## 12. Risks & Mitigations
 
 | Risk | Impact | Mitigation |
 |---|---|---|
@@ -151,7 +167,7 @@ BDA-MDD-Reddit-NLP/
 | Subreddit posts removed/deleted | Incomplete dataset | Collect surplus data, document exclusions |
 | Class imbalance (MDD >> Control) | Biased model | Stratified sampling, balance dataset sizes |
 
-## 12. References
+## 13. References
 
 - [PullPush API Brief](docs/assets/reddit_api_project_brief.md)
 - [Reddit API Terms](https://www.reddit.com/wiki/api/)

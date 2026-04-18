@@ -55,12 +55,27 @@ We scrape posts from `r/SuicideWatch`, `r/depression`, and a neutral baseline `r
 
 ## Key Results
 
-The upgraded notebook now generates a synchronized evaluation artifact instead of relying only on one historical split:
+The latest Colab T4 run generated the synchronized evaluation artifacts and the current committed metrics below.
 
-- **Fixed holdout outputs** for `TF-IDF + Logistic Regression`, `TF-IDF + LinearSVC`, and `TwitterRoBERTa + Random Forest`
-- **Repeated CV summary** with mean ± std for accuracy, macro F1, and weighted F1
-- **Permutation-test p-value** and **learning curve** for the main TF-IDF baseline
-- **Exported artifacts** in `data/processed/` for report synchronization:
+### Repeated Cross-Validation
+
+| Model | Accuracy (mean ± std) | Macro F1 (mean ± std) | Weighted F1 (mean ± std) |
+|:---|:---:|:---:|:---:|
+| **TF-IDF + Logistic Regression** | **0.7762 ± 0.0100** | **0.7251 ± 0.0109** | **0.7747 ± 0.0099** |
+| TF-IDF + LinearSVC | 0.7616 ± 0.0077 | 0.7059 ± 0.0096 | 0.7584 ± 0.0082 |
+| TwitterRoBERTa + Random Forest | 0.7600 ± 0.0071 | 0.6955 ± 0.0085 | 0.7503 ± 0.0076 |
+
+### Fixed Holdout Split
+
+| Model | Accuracy | Macro F1 | Severe Precision | Severe Recall |
+|:---|:---:|:---:|:---:|:---:|
+| **TF-IDF + Logistic Regression** | **0.7841** | **0.7355** | **0.6721** | **0.6340** |
+| TF-IDF + LinearSVC | 0.7700 | 0.7175 | 0.6651 | 0.6231 |
+| TwitterRoBERTa + Random Forest | 0.7596 | 0.6969 | 0.6684 | 0.5534 |
+
+- **Permutation test:** the main TF-IDF baseline reached macro F1 `0.7221` with `p = 0.032258`, supporting performance above chance at the 5% level.
+- **Dataset QA snapshot:** `9,800` rows before QA, `9,607` after QA, with `145` duplicate `post_id` rows and `48` exact duplicate `title+selftext` rows removed.
+- **Exported artifacts** in `data/processed/`:
   - `dataset_summary.csv`
   - `results_summary.csv`
   - `error_analysis_holdout.csv`
@@ -232,11 +247,7 @@ This will:
    - installs the notebook-only Colab dependencies,
    - detects whether a CUDA GPU is available,
    - and keeps the full processed dataset for the official TwitterRoBERTa evaluation path.
-4. Add Colab Secrets only if you want GitHub write-back from Colab:
-   - `GITHUB_TOKEN` for authenticated clone/push
-   - `GITHUB_USERNAME` if you are using a fork instead of the default repository owner
-   - `GITHUB_REPO` if your fork/repository name differs from `BDA-MDD-Reddit-NLP`
-   - `GIT_USER_NAME` and `GIT_USER_EMAIL` if you want to commit and push artifacts from Colab
+4. Add a Colab Secret named `GITHUB_TOKEN` if you want authenticated clone/push from Colab
 5. Run all cells
 6. The final sync cell now stages and pushes the full Colab repo state by default when `GITHUB_TOKEN` is present; you can disable that by setting `AUTO_PUSH_CHANGES = False`
 

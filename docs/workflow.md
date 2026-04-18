@@ -88,6 +88,19 @@ The current notebook now strengthens the evidence beyond one train/test split:
 
 The notebook exports synchronized evaluation artifacts to `data/processed/`, with `results_summary.csv` as the intended metrics source of truth after each run.
 
+### 2.5 Current Committed Evaluation Snapshot
+The latest Colab T4 execution produced the following committed metrics:
+- **Repeated CV**
+  - `TF-IDF + Logistic Regression`: accuracy `0.7762 ± 0.0100`, macro F1 `0.7251 ± 0.0109`
+  - `TF-IDF + LinearSVC`: accuracy `0.7616 ± 0.0077`, macro F1 `0.7059 ± 0.0096`
+  - `TwitterRoBERTa + Random Forest`: accuracy `0.7600 ± 0.0071`, macro F1 `0.6955 ± 0.0085`
+- **Holdout**
+  - `TF-IDF + Logistic Regression`: accuracy `0.7841`, macro F1 `0.7355`
+  - `TF-IDF + LinearSVC`: accuracy `0.7700`, macro F1 `0.7175`
+  - `TwitterRoBERTa + Random Forest`: accuracy `0.7596`, macro F1 `0.6969`
+- **Permutation test**
+  - `TF-IDF + Logistic Regression`: macro F1 `0.7221`, `p = 0.032258`
+
 ---
 
 ## Phase 3: Project Automation
@@ -103,5 +116,8 @@ Generated assets serving the downstream project operations:
 - `data/raw/reddit_raw.csv` — the raw scrape output, targeting 10,000 posts before post-cleaning filters.
 - `data/processed/reddit_mdd_cleaned.csv` — the processed dataset with metadata, labels, cleaned text, `word_count`, `sentiment_score`, and `text_hash`.
 - `data/processed/dataset_summary.csv` — a compact QA summary covering duplicate removal, row counts, label counts, missingness, length stats, and date range.
+- `data/processed/results_summary.csv` — the synchronized metrics export covering repeated CV, holdout metrics, and the permutation-test result.
+- `data/processed/error_analysis_holdout.csv` — representative holdout misclassifications with explanation notes.
+- `data/processed/top_tokens_by_class.csv` — top sparse-model tokens exported for interpretation.
 - `notebooks/02_text_classification_models.ipynb` — the current classification, CV, SHAP, error analysis, and EDA notebook.
 - `notebooks/Assignment_1_PRAW_Extraction.ipynb` — a legacy notebook from the original PRAW-based assignment plan, retained for coursework history rather than the production PullPush pipeline.
