@@ -238,7 +238,7 @@ This will:
    - `GITHUB_REPO` if your fork/repository name differs from `BDA-MDD-Reddit-NLP`
    - `GIT_USER_NAME` and `GIT_USER_EMAIL` if you want to commit and push artifacts from Colab
 5. Run all cells
-6. If you want the generated CSV artifacts committed back to GitHub, set `AUTO_PUSH_ARTIFACTS = True` in the final optional sync cell and run it after reviewing the outputs
+6. The final sync cell now stages and pushes the full Colab repo state by default when `GITHUB_TOKEN` is present; you can disable that by setting `AUTO_PUSH_CHANGES = False`
 
 #### Option B: Local Execution
 
