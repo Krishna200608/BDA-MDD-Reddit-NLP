@@ -1,7 +1,7 @@
 # Project Context — BDA: Reddit MDD NLP Corpus
 
 > **Living Document** — Updated throughout the project lifecycle.  
-> Last Updated: 2026-04-07
+> Last Updated: 2026-04-18
 
 ---
 
@@ -35,7 +35,6 @@
 |---|---|---|
 | `r/depression` | MDD-related posts | Moderate MDD |
 | `r/SuicideWatch` | Severe risk posts | Severe Ideation |
-| `r/mentalhealth` | MDD-related posts (filtered) | Moderate MDD |
 | `r/CasualConversation` | Neutral/control posts | Control |
 
 ## 5. Assignments & Deliverables
@@ -51,7 +50,7 @@
 | Deliverable | Format | Status |
 |---|---|---|
 | Python Notebook for text classification models | `.ipynb` | ✅ Complete |
-| EDA & Language Pattern Detection (symptom keywords, word clouds, sentiment, bigrams, ROC) | `.ipynb` | ✅ Complete |
+| EDA & Language Pattern Detection (symptom keywords, word clouds, sentiment, bigrams, SHAP) | `.ipynb` | ✅ Complete |
 | Documentation of methods and results | `.md` | ✅ Complete |
 | Automated pipeline for quarterly updates | `.py` | ✅ Complete |
 
@@ -77,15 +76,16 @@
 | `subreddit` | `str` | Source subreddit name |
 | `timestamp` | `datetime` | UTC time of post creation |
 | `title` | `str` | Post title |
-| `selftext` | `str` | Post body (cleaned) |
+| `selftext` | `str` | Raw Reddit post body |
 | `score` | `int` | Post upvote score |
 | `num_comments` | `int` | Number of comments |
+| `author` | `str` | Reddit username captured in the scrape |
 | `label` | `str` | `Control`, `Moderate MDD`, or `Severe Ideation` |
-| `selftext_cleaned` | `str` | Lowercased, stopwords removed, lemmatized |
+| `selftext_cleaned` | `str` | Lowercased, regex-cleaned, stopwords removed |
 | `word_count` | `int` | Word count of cleaned text |
-| `sentiment_score` | `float` | VADER / TextBlob sentiment polarity |
+| `sentiment_score` | `float` | VADER compound sentiment score |
 
-## 8. Project Directory Structure (Planned)
+## 8. Project Directory Structure (Current)
 
 ```
 BDA-MDD-Reddit-NLP/
@@ -93,14 +93,12 @@ BDA-MDD-Reddit-NLP/
 │   ├── raw/                    # Raw scraped data (gitignored if large)
 │   └── processed/              # Cleaned, labeled CSVs
 ├── notebooks/
-│   ├── Assignment_1_PRAW_Extraction.ipynb
+│   ├── Assignment_1_PRAW_Extraction.ipynb    # Legacy notebook from the original PRAW plan
 │   └── 02_text_classification_models.ipynb     # TF-IDF, TwitterRoBERTa, SHAP
 ├── src/
-│   ├── __init__.py
 │   ├── scraper.py              # PullPush API scraper using requests
 │   ├── pipeline.py             # Main Extraction & Cleaning pipeline
-│   ├── quarterly_updater.py    # Automation Daemon script (schedule)
-│   └── utils.py                # Helper functions
+│   └── quarterly_updater.py    # Local automation fallback using schedule
 ├── docs/
 │   ├── assignments/
 │   │   └── Our_Project_Task.md # Original grading criteria
@@ -133,10 +131,10 @@ BDA-MDD-Reddit-NLP/
 |---|---|---|
 | 2026-04-02 | Project initiated | Assignment 1 released by Prof. Sonali Agarwal |
 | 2026-04-02 | Reddit API access requested | Needed for PRAW-based data extraction |
-| 2026-04-06 | ClinicalBERT hardware optimization | Dynamic GPU (Colab) scaling implemented to speed up vectorization |
+| 2026-04-06 | Transformer hardware optimization | Dynamic GPU (Colab) scaling implemented to speed up embedding generation |
 | 2026-04-06 | Colab Github Auth Secret Sync | Integrated dynamic repo sync to fix absolute filepath breakages in cloud rendering |
 | 2026-04-06 | Quarterly automation → GitHub Actions | Replaced local `schedule` daemon with CI/CD cron workflow for zero-maintenance refresh |
-| 2026-04-07 | EDA & Language Pattern Detection section | Added 6 analyses: DSM-5 symptom keyword frequency, word clouds, VADER sentiment distribution, post length distribution, top bigrams, ROC curves |
+| 2026-04-07 | EDA & Language Pattern Detection section | Added 6 analyses: DSM-5 symptom keyword frequency, word clouds, VADER sentiment distribution, post length distribution, top bigrams, SHAP explainability |
 | 2026-04-10 | Tertiary Severity Mapping | Upgraded labeling from binary to Control vs. Moderate vs. Severe |
 | 2026-04-10 | Gated Repo Fix (TwitterRoBERTa) | Switched from mental-roberta to cardiffnlp/twitter-roberta-base to prevent 401 Gated Error on Colab |
 | 2026-04-10 | PyTorch TQDM Acceleration | Rewrote embedding generation from apply() to batched iteration |
@@ -152,10 +150,10 @@ BDA-MDD-Reddit-NLP/
 
 ## 12. References
 
-- [PRAW Documentation](https://praw.readthedocs.io/)
+- [PullPush API Brief](docs/assets/reddit_api_project_brief.md)
 - [Reddit API Terms](https://www.reddit.com/wiki/api/)
 - [VADER Sentiment Analysis](https://github.com/cjhutto/vaderSentiment)
-- [ClinicalBERT](https://huggingface.co/emilyalsentzer/Bio_ClinicalBERT)
+- [TwitterRoBERTa](https://huggingface.co/cardiffnlp/twitter-roberta-base)
 
 ---
 

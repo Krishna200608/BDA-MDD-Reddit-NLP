@@ -63,14 +63,14 @@
 **What I built:**
 - Implemented the VADER sentiment analysis layer — computes the `sentiment_score` (compound polarity) for every post using the uncleaned `selftext` so we don't lose emotional punctuation cues.
 - Orchestrated the full pipeline flow: data collection → raw CSV export → cleaning → feature engineering → processed CSV export.
-- Validated the final dataset: checked class balance (5,000 MDD vs. 5,000 Control), verified no null/duplicate entries, confirmed column schema matches the deliverable spec.
+- Validated the final dataset structure: checked schema, class distribution, and processed-output integrity after filtering. The current committed snapshot is three-class and slightly under the 10,000 raw target because posts shorter than 5 cleaned words are dropped.
 - Wrote all documentation: `docs/workflow.md`, the Assignment 1 notebook walkthrough (`notebooks/Assignment_1_PRAW_Extraction.ipynb`).
 - Set up the project structure: `requirements.txt`, `.gitignore`, directory layout.
 
 **Key technical details to explain:**
 - VADER (Valence Aware Dictionary and sEntiment Reasoner) is a lexicon-based sentiment tool specifically tuned for social media text. It outputs a compound score from -1 (very negative) to +1 (very positive).
 - We feed the **original uncleaned text** to VADER (not the cleaned version) because VADER relies on capitalization, punctuation, and emojis for sentiment intensity — cleaning would destroy those signals.
-- The final CSV schema has 10 columns: `post_id`, `subreddit`, `timestamp`, `title`, `selftext`, `score`, `num_comments`, `label`, `selftext_cleaned`, `word_count`, `sentiment_score`.
+- The processed CSV currently has 12 columns: `post_id`, `subreddit`, `timestamp`, `title`, `selftext`, `score`, `num_comments`, `author`, `label`, `selftext_cleaned`, `word_count`, `sentiment_score`.
 
 **Files I can point to:**
 - `src/pipeline.py` (lines 91–98 — VADER sentiment scoring)
@@ -79,7 +79,7 @@
 - `notebooks/Assignment_1_PRAW_Extraction.ipynb`
 
 **If the TA asks: "Why use VADER and not a transformer for sentiment?"**
-> "VADER is lightweight, requires no training, and is specifically designed for social media text. It serves as a baseline feature. We use the more powerful Bio_ClinicalBERT in Assignment 2 for the actual classification task."
+> "VADER is lightweight, requires no training, and is specifically designed for social media text. It serves as a baseline feature, while the Assignment 2 classification notebook uses TwitterRoBERTa embeddings for the dense model track."
 
 ---
 ---
@@ -109,15 +109,15 @@
 |:---|:---|
 | **Assignment 1** | Wrote `clean_text()` — regex-based preprocessing, stopword removal, word count filtering |
 | **Assignment 2 — Model A** | TF-IDF vectorizer (5,000 features, unigrams + bigrams) + Logistic Regression with balanced class weights |
-| **Assignment 2 — Model B** | Bio_ClinicalBERT embeddings (768-dim dense vectors) + Random Forest classifier (100 estimators) |
-| **Assignment 2 — EDA** | DSM-5 symptom keyword analysis, word clouds, sentiment distribution, post length analysis, top bigrams, ROC curves |
+| **Assignment 2 — Model B** | TwitterRoBERTa embeddings (768-dim dense vectors) + Random Forest classifier (100 estimators) |
+| **Assignment 2 — EDA** | DSM-5 symptom keyword analysis, word clouds, sentiment distribution, post length analysis, top bigrams, SHAP explainability |
 | **Hardware** | Implemented dynamic GPU/CPU detection — full dataset on T4 GPU, 2,000-sample subset on CPU |
 
 **Key talking points:**
-- "I built both classification tracks. The baseline TF-IDF approach achieved **91.7% accuracy** because forum-specific vocabulary like 'hopeless' and 'worthless' are strong discriminators in a bag-of-words model."
-- "ClinicalBERT was pre-trained on MIMIC-III clinical notes — we used its `[CLS]` token embeddings as fixed features for a Random Forest. It reached **85.8% accuracy**, slightly lower because Reddit slang doesn't align perfectly with clinical terminology."
+- "I built both classification tracks for the final three-class severity problem. The baseline TF-IDF approach achieved **78.7% accuracy**, while the dense TwitterRoBERTa + Random Forest track reached **74.2% accuracy**."
+- "We moved away from older clinical-note model choices and used `cardiffnlp/twitter-roberta-base` because it is trained on social-media text and better matches informal online language."
 - "The notebook auto-detects hardware: if a CUDA GPU is available, it processes all 10,000 rows; otherwise it subsamples to 2,000 to prevent CPU overload."
-- "I also implemented the EDA section with six analyses: symptom keyword frequency heatmaps aligned to DSM-5, side-by-side word clouds for MDD vs Control, sentiment distribution comparisons, post length violin plots, top bigram extraction, and ROC curve comparisons for both models."
+- "I also implemented the EDA section with six analyses: symptom keyword frequency heatmaps aligned to DSM-5, side-by-side word clouds, sentiment distribution comparisons, post length analysis, top bigram extraction, and SHAP-based explainability."
 
 ---
 
@@ -131,8 +131,8 @@
 | **Documentation** | README.md (architecture diagram, results table, EDA summary, usage guide), Context.md |
 
 **Key talking points:**
-- "I handled all evaluation and documentation. The methods document compares both models head-to-head: TF-IDF won on accuracy (91.7% vs 85.8%) because sparse keyword matching works well when the two classes have very distinct vocabularies."
-- "The EDA section in the methods document covers six complementary analyses — symptom keywords, word clouds, sentiment, post length, bigrams, and ROC curves — that collectively demonstrate MDD posts have measurably different linguistic signatures."
+- "I handled all evaluation and documentation. The methods document compares both models head-to-head on the current three-class framing: TF-IDF won on accuracy (78.7% vs 74.2%)."
+- "The EDA section in the methods document covers six complementary analyses — symptom keywords, word clouds, sentiment, post length, bigrams, and SHAP explainability — that collectively demonstrate MDD-related posts have measurably different linguistic signatures."
 - "For automation, we have two options: GitHub Actions (cloud-based, zero maintenance) and a local Python daemon using the `schedule` library. Both re-run the full pipeline every quarter to keep the dataset fresh."
 - "The README includes a Mermaid architecture diagram that GitHub renders natively, showing the full data flow from scraping to evaluation and EDA."
 
@@ -149,7 +149,7 @@
 | `src/quarterly_updater.py` | Tavish |
 | `notebooks/Assignment_1_PRAW_Extraction.ipynb` | Tavish |
 | `notebooks/02_text_classification_models.ipynb` (TF-IDF + LR) | Priyam |
-| `notebooks/02_text_classification_models.ipynb` (ClinicalBERT + RF) | Priyam |
+| `notebooks/02_text_classification_models.ipynb` (TwitterRoBERTa + RF) | Priyam |
 | `notebooks/02_text_classification_models.ipynb` (EDA & Language Pattern Detection) | Priyam |
 | `notebooks/02_text_classification_models.ipynb` (Colab/Git setup) | Krishna |
 | `.github/workflows/quarterly_update.yml` | Krishna |

@@ -18,7 +18,7 @@ We employed a dual-track analytical architecture, contrasting classical sparse t
 - **Hardware Profile**: Pure CPU Execution. 
 
 ### 1.2 Deep NLP Track: TwitterRoBERTa + Random Forest
-- **Vectorization**: We passed raw text through `cardiffnlp/twitter-roberta-base`, a transformer-based masked language model explicitly pre-trained on mental health domains from Reddit. This architecture abstracts sentences into 768-dimensional dense vectors to natively capture informal, online psychiatric discourse and slang.
+- **Vectorization**: We passed raw text through `cardiffnlp/twitter-roberta-base`, a transformer model pre-trained on large-scale social-media text. This yields 768-dimensional dense vectors that are better suited to informal online language than clinical-note models.
 - **Model**: A Random Forest classifier (100 estimators; max-depth untethered) mapped to the continuous vector mappings of the `[CLS]` token hidden states.
 - **Hardware Profile**: Hybrid CPU/CUDA via Google Colab.
 
@@ -26,7 +26,7 @@ We employed a dual-track analytical architecture, contrasting classical sparse t
 
 ## 2. Experimental Results
 
-We evaluated the pipelines across a rigid 80/20 train-test split configuration. *(Note: Following the transition from binary 'MDD' to a tertiary severity classification, quantitative metrics presented below will undergo variance as macro-averages across three classes are computed upon the next Colab run.)*
+We evaluated the pipelines on a fixed 80/20 train-test split under the current three-class severity formulation.
 
 ### 2.1 Classical Baseline (TF-IDF Logistic Regression)
 *The sparse-matrix representation performs exceptionally well across 3 classes, likely due to distinct, rigid vocabulary deviations found between ideation forums (r/SuicideWatch) versus general depression boards.*
@@ -37,7 +37,7 @@ We evaluated the pipelines across a rigid 80/20 train-test split configuration. 
 - **Precision (Severe Ideation):** 65% | **Recall:** 67%
 
 ### 2.2 Deep Representation (TwitterRoBERTa Random Forest)
-*Swapping from the hospital-trained Bio_ClinicalBERT to the Reddit-trained TwitterRoBERTa allowed the dense embeddings to successfully capture the specific slang and idiomatic nuances of online distress narratives, significantly heightening vectorization efficacy.*
+*Swapping from the hospital-trained Bio_ClinicalBERT to the social-media-trained TwitterRoBERTa improved alignment with informal online language and slang, making the dense representation track more appropriate for Reddit-style text.*
 
 - **Overall Accuracy:** 74.2%
 - **Macro Avg F1-Score:** 0.67
@@ -57,7 +57,7 @@ This section directly addresses the project objective of detecting *symptom and 
 
 ### 3.1 DSM-5 Symptom Keyword Frequency Analysis
 
-A curated list of 24 DSM-5-aligned MDD symptom keywords (e.g., *hopeless*, *worthless*, *suicide*, *insomnia*, *fatigue*, *guilt*, *empty*, *numb*) was compiled and mapped against both the MDD and Control classes.
+A curated list of 24 DSM-5-aligned MDD symptom keywords (e.g., *hopeless*, *worthless*, *suicide*, *insomnia*, *fatigue*, *guilt*, *empty*, *numb*) was compiled and compared between distress-related posts and the Control class.
 
 **Key Findings:**
 - MDD posts contain significantly higher average symptom keyword counts per post compared to Control posts.
@@ -66,7 +66,7 @@ A curated list of 24 DSM-5-aligned MDD symptom keywords (e.g., *hopeless*, *wort
 
 ### 3.2 Word Clouds (MDD vs. Control)
 
-Side-by-side word clouds were generated for each class to provide an intuitive visual comparison of dominant vocabulary.
+Side-by-side word clouds were generated to provide an intuitive comparison of dominant distress-related vocabulary versus the Control baseline.
 
 **Key Findings:**
 - The MDD word cloud is dominated by emotionally charged terms reflecting internal psychological distress (e.g., *feel*, *life*, *want*, *know*, *time*, *people*).
@@ -74,7 +74,7 @@ Side-by-side word clouds were generated for each class to provide an intuitive v
 
 ### 3.3 VADER Sentiment Score Distribution
 
-A KDE (Kernel Density Estimate) comparison of VADER compound sentiment scores between classes.
+A KDE (Kernel Density Estimate) comparison of VADER compound sentiment scores between distress-related posts and the Control baseline.
 
 **Key Findings:**
 - MDD posts show a clear leftward shift in sentiment distribution, peaking in the negative sentiment range.
@@ -83,7 +83,7 @@ A KDE (Kernel Density Estimate) comparison of VADER compound sentiment scores be
 
 ### 3.4 Post Length Distribution
 
-A violin plot comparing word counts of cleaned text between the two classes.
+A violin plot comparing word counts of cleaned text between distress-related posts and the Control baseline.
 
 **Key Findings:**
 - MDD posts tend to be longer on average, consistent with psychological research suggesting that depressive rumination leads to more verbose self-expression.
@@ -91,7 +91,7 @@ A violin plot comparing word counts of cleaned text between the two classes.
 
 ### 3.5 Top Bigrams (MDD vs. Control)
 
-The top 15 bigrams (two-word phrases) were extracted for each class to capture multi-word expressions that reflect distinct language patterns.
+The top 15 bigrams (two-word phrases) were extracted to capture multi-word expressions that reflect distinct language patterns in distress-related text versus Control text.
 
 **Key Findings:**
 - MDD bigrams capture emotional and cognitive distress phrases characteristic of depressive narratives.

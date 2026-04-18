@@ -36,11 +36,11 @@
 
 This repository presents a complete NLP pipeline for **multi-class severity classification of Reddit posts** into Moderate MDD, Severe Ideation, and healthy control text. The project addresses a critical gap in scalable mental health screening by leveraging publicly available social media data.
 
-We scrape self-reported posts from triage subreddits (`r/SuicideWatch`), depression forums (`r/depression`), and a neutral baseline (`r/CasualConversation`), apply classical and deep-learning NLP techniques, and use Explainable AI (SHAP) to interpret predictive language features in informal online text.
+We scrape posts from `r/SuicideWatch`, `r/depression`, and a neutral baseline `r/CasualConversation`, apply classical and transformer-based NLP techniques, and use Explainable AI (SHAP) to interpret predictive language features in informal social-media text.
 
 ### Highlights
 
-- **10,000-post** balanced corpus (5,000 MDD · 5,000 Control)
+- **10,000-post raw extraction target** with a **9,800-row processed snapshot** after minimum-length filtering
 - Tertiary severity classification (Control, Moderate MDD, Severe Ideation)
 - **Classical NLP:** TF-IDF + Logistic Regression
 - **Deep Representation:** `twitter-roberta-base` + Random Forest
@@ -53,7 +53,7 @@ We scrape self-reported posts from triage subreddits (`r/SuicideWatch`), depress
 
 ## Key Results
 
-*(Note: Quantitative accuracy metrics were dynamically updated post-architecture revision from binary to tertiary severity indexing. Initial results indicated sparse TF-IDF modeling outperformed embeddings on social media slang—hence the migration to the domain-trained `twitter-roberta-base`, which stabilized semantic tracking.)*
+*(Note: Quantitative metrics below reflect the current three-class severity setup. Sparse TF-IDF remained the stronger baseline, while the transformer track was updated from older clinical-note models to the social-media-trained `cardiffnlp/twitter-roberta-base`.)*
 
 | Model | Accuracy | Macro F1 | Weighted F1 | Precision (Severe) |
 |:---|:---:|:---:|:---:|:---:|
@@ -92,7 +92,7 @@ flowchart TD
     end
 
     B --> C["src/pipeline.py\nRegex · NLTK · VADER"]
-    C --> D["reddit_mdd_cleaned.csv\n~10,000 posts"]
+    C --> D["reddit_mdd_cleaned.csv\ncurrent snapshot: 9,800 posts"]
 
     D --> E["Track A — Classical NLP\n(CPU)"]
     D --> F["Track B — Deep NLP\n(GPU / CPU)"]
@@ -103,11 +103,11 @@ flowchart TD
     end
 
     subgraph TrackB ["Advanced Track"]
-        F --> F1["Bio_ClinicalBERT\n768-dim dense embeddings"]
+        F --> F1["TwitterRoBERTa\n768-dim dense embeddings"]
         F1 --> F2["Random Forest\n100 estimators"]
     end
 
-    E2 --> G["Evaluation\nAccuracy · F1 · Confusion Matrix · ROC"]
+    E2 --> G["Evaluation\nAccuracy · Macro F1 · Weighted F1 · Confusion Matrix"]
     F2 --> G
 
     D --> H["EDA & Language Patterns"]
@@ -139,15 +139,13 @@ BDA-MDD-Reddit-NLP/
 │       └── reddit_mdd_cleaned.csv
 │
 ├── notebooks/
-│   ├── Assignment_1_PRAW_Extraction.ipynb    # Data extraction walkthrough
-│   └── 02_text_classification_models.ipynb   # ML classification (TF-IDF & BERT)
+│   ├── Assignment_1_PRAW_Extraction.ipynb    # Legacy notebook from the original PRAW plan
+│   └── 02_text_classification_models.ipynb   # ML classification (TF-IDF & TwitterRoBERTa)
 │
 ├── src/
-│   ├── __init__.py
 │   ├── scraper.py                            # PullPush API client
 │   ├── pipeline.py                           # End-to-end extraction + cleaning
-│   ├── quarterly_updater.py                  # Automated 90-day refresh daemon
-│   └── utils.py                              # Shared utilities
+│   └── quarterly_updater.py                  # Local 90-day refresh fallback
 │
 ├── docs/
 │   ├── assignments/
@@ -206,9 +204,9 @@ python src/pipeline.py
 ```
 
 This will:
-1. Scrape 10,000 posts via the PullPush proxy API
+1. Attempt to scrape 10,000 posts via the PullPush proxy API
 2. Clean text (regex, stopword removal, lowercasing)
-3. Compute VADER sentiment scores
+3. Drop posts with fewer than 5 cleaned words and compute VADER sentiment scores
 4. Export `data/raw/reddit_raw.csv` and `data/processed/reddit_mdd_cleaned.csv`
 
 ### Assignment 2 — Text Classification Models
@@ -265,12 +263,12 @@ This uses the [`schedule`](https://pypi.org/project/schedule/) library and runs 
 
 | Property | Value |
 |:---|:---|
-| **Total Posts** | ~10,000 (after cleaning) |
-| **MDD Class** | `r/depression` + `r/SuicideWatch` (5,000 posts) |
-| **Control Class** | `r/CasualConversation` (5,000 posts) |
-| **Features** | Post ID, subreddit, title, selftext, cleaned text, word count, VADER sentiment |
+| **Current Committed Snapshot** | 9,800 processed rows |
+| **Label Distribution** | `Control` 4,992 · `Moderate MDD` 2,458 · `Severe Ideation` 2,350 |
+| **Raw Extraction Target** | `r/depression` 2,500 · `r/SuicideWatch` 2,500 · `r/CasualConversation` 5,000 |
+| **Features** | `post_id`, `subreddit`, `timestamp`, `title`, `selftext`, `score`, `num_comments`, `author`, `label`, `selftext_cleaned`, `word_count`, `sentiment_score` |
 | **Source** | [PullPush.io](https://pullpush.io) (Pushshift proxy) |
-| **Split** | 80% train / 20% test (stratified) |
+| **Split** | 80% train / 20% test (stratified, in the notebook experiments) |
 
 ---
 
@@ -281,10 +279,10 @@ This uses the [`schedule`](https://pypi.org/project/schedule/) library and runs 
 | **Language** | Python 3.12+ |
 | **Data** | pandas · NumPy |
 | **NLP** | NLTK · regex · VADER Sentiment · wordcloud |
-| **Embeddings** | [Bio_ClinicalBERT](https://huggingface.co/emilyalsentzer/Bio_ClinicalBERT) (HuggingFace Transformers) |
+| **Embeddings** | [TwitterRoBERTa](https://huggingface.co/cardiffnlp/twitter-roberta-base) (HuggingFace Transformers) |
 | **ML** | scikit-learn (Logistic Regression, Random Forest, TF-IDF) |
 | **Deep Learning** | PyTorch (CUDA / CPU) |
-| **Automation** | schedule |
+| **Automation** | GitHub Actions CI/CD + `schedule` fallback |
 | **Environment** | venv · pip |
 | **Version Control** | Git + GitHub |
 
@@ -305,10 +303,9 @@ This uses the [`schedule`](https://pypi.org/project/schedule/) library and runs 
 
 ## Acknowledgements
 
-- [emilyalsentzer/Bio_ClinicalBERT](https://huggingface.co/emilyalsentzer/Bio_ClinicalBERT) — Clinical text embeddings pre-trained on MIMIC-III notes
+- [cardiffnlp/twitter-roberta-base](https://huggingface.co/cardiffnlp/twitter-roberta-base) — Social-media transformer used for dense embedding experiments
 - [VADER Sentiment Analysis](https://github.com/cjhutto/vaderSentiment) — Lexicon-based sentiment scoring
 - [PullPush.io](https://pullpush.io) — Pushshift API proxy for historical Reddit data
-- [PRAW](https://praw.readthedocs.io/) — Python Reddit API Wrapper
 - [scikit-learn](https://scikit-learn.org/) — Machine learning framework
 - [HuggingFace Transformers](https://huggingface.co/docs/transformers) — Transformer model ecosystem
 
