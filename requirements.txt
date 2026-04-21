@@ -8,10 +8,13 @@ nltk
 vaderSentiment
 tqdm
 scikit-learn
+joblib
 praw
 python-dotenv
 torch
 transformers
+streamlit
+plotly
 schedule==1.2.2
 wordcloud
 shap

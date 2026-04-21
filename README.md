@@ -54,9 +54,11 @@ The repository is organized so an evaluator can either inspect the committed art
 - **Deep Representation:** `twitter-roberta-base` + Random Forest
 - **Stronger evaluation:** fixed holdout split + 5-fold, 3-repeat repeated cross-validation
 - **Dataset QA artifacts:** duplicate removal, `text_hash`, and `dataset_summary.csv`
+- **Deployment-ready artifacts:** saved `.joblib` models + metadata for live inference
 - **Explainable AI (XAI):** SHAP integration for clinical transparency
 - **Comprehensive EDA** — DSM-5 symptom keyword analysis, word clouds, sentiment distributions, post length profiling, bigrams, learning curve, and error analysis
 - **Hardware-agnostic** notebook — auto-detects CUDA GPU or falls back to CPU
+- **Streamlit dashboard path** for polished live demo inference
 - **Automated quarterly refresh** via GitHub Actions CI/CD
 
 ---
@@ -68,6 +70,7 @@ The repository is organized so an evaluator can either inspect the committed art
 | **Project maturity** | Final coursework-ready repository with committed evaluation artifacts |
 | **Recommended evaluation path** | Google Colab with **T4 GPU** |
 | **Primary metrics source** | `data/processed/results_summary.csv` |
+| **Live demo path** | `streamlit run app.py` after pulling saved model artifacts |
 | **Best repeated-CV model** | `TF-IDF + Logistic Regression` |
 | **Best holdout model** | `TF-IDF + Logistic Regression` |
 | **QA status** | Duplicate-safe processed snapshot committed with `dataset_summary.csv` |
@@ -84,6 +87,7 @@ If you want the quickest high-signal read of the project, use this order:
 2. Open [`data/processed/results_summary.csv`](data/processed/results_summary.csv) for the committed source-of-truth metrics.
 3. Read [`docs/methods_and_results.md`](docs/methods_and_results.md) for methodology, interpretation, and error analysis.
 4. Open [`notebooks/02_text_classification_models.ipynb`](notebooks/02_text_classification_models.ipynb) if you want to see the full evaluation pipeline that produced the artifacts.
+5. Open [`app.py`](app.py) if you want to inspect the live-inference dashboard entry point.
 
 If you are checking reproducibility, the recommended path is the Colab T4 workflow documented below. If you are checking implementation quality, start with [`src/pipeline.py`](src/pipeline.py), [`src/scraper.py`](src/scraper.py), and [`docs/workflow.md`](docs/workflow.md).
 
@@ -130,6 +134,16 @@ The latest Colab T4 run generated synchronized artifacts and the committed metri
 | `data/processed/results_summary.csv` | Repeated-CV metrics, holdout metrics, and permutation-test result |
 | `data/processed/error_analysis_holdout.csv` | Representative misclassifications from the holdout split |
 | `data/processed/top_tokens_by_class.csv` | Top sparse-model tokens exported for interpretation |
+
+### Deployment Artifacts
+
+| Artifact | Purpose |
+|:---|:---|
+| `models/tfidf_logreg_pipeline.joblib` | Default live inference model for the Streamlit dashboard |
+| `models/tfidf_linearsvc_pipeline.joblib` | Secondary sparse baseline available for model switching |
+| `models/roberta_rf_classifier.joblib` | Saved dense-classifier head for runtime TwitterRoBERTa inference |
+| `models/model_metadata.json` | Dashboard metadata, default model, benchmark snapshots, and artifact registry |
+| `models/class_labels.json` | Stable label ordering and numeric mapping for live inference |
 
 > **Source of truth:** after each notebook run, the latest metrics should be taken from `results_summary.csv`, not from hard-coded markdown tables.
 
@@ -178,6 +192,7 @@ In practice, this means the project is not just a notebook with a single accurac
 | [`docs/methods_and_results.md`](docs/methods_and_results.md) | Final evaluation narrative, methodology, and interpretation |
 | [`docs/team_work_division.md`](docs/team_work_division.md) | Viva/demo cheat sheet by contributor |
 | [`data/processed/results_summary.csv`](data/processed/results_summary.csv) | Latest committed metrics export |
+| [`app.py`](app.py) | Streamlit dashboard entry point for live inference |
 
 ---
 
@@ -248,13 +263,22 @@ BDA-MDD-Reddit-NLP/
 │       ├── error_analysis_holdout.csv
 │       └── top_tokens_by_class.csv
 │
+├── models/                                   # Saved deployment artifacts for live inference
+│   ├── tfidf_logreg_pipeline.joblib
+│   ├── tfidf_linearsvc_pipeline.joblib
+│   ├── roberta_rf_classifier.joblib
+│   ├── model_metadata.json
+│   └── class_labels.json
+│
 ├── notebooks/
 │   ├── Assignment_1_PRAW_Extraction.ipynb    # Legacy notebook from the original PRAW plan
-│   └── 02_text_classification_models.ipynb   # QA, ML comparison, CV, SHAP, and EDA
+│   └── 02_text_classification_models.ipynb   # QA, ML comparison, CV, SHAP, EDA, and model export
 │
 ├── src/
 │   ├── scraper.py                            # PullPush API client
 │   ├── pipeline.py                           # End-to-end extraction + cleaning
+│   ├── inference.py                          # Shared model loading and prediction logic
+│   ├── dashboard_utils.py                    # Streamlit styling and chart helpers
 │   └── quarterly_updater.py                  # Local 90-day refresh fallback
 │
 ├── docs/
@@ -267,6 +291,7 @@ BDA-MDD-Reddit-NLP/
 │
 ├── .env.example                              # Environment variable template
 ├── .gitignore
+├── app.py                                    # Streamlit live inference dashboard
 ├── Context.md                                # Living project context document
 ├── README.md                                 # ← You are here
 └── requirements.txt                          # Python dependencies
@@ -310,6 +335,7 @@ pip install -r requirements.txt
 | **Official coursework reproduction** | Google Colab + **T4 GPU** | Uses the full processed dataset and the intended dense-model evaluation path |
 | **Fast local inspection** | Open the committed CSV artifacts directly | No rerun required |
 | **Local notebook experimentation** | Run the notebook on CPU | Dense-model path automatically uses a smaller fallback sample |
+| **Live dashboard demo** | Pull repo after Colab export, then run `streamlit run app.py` | Requires saved artifacts under `models/` |
 | **Dataset refresh** | `python src/pipeline.py` or GitHub Actions | Regenerates the cleaned dataset and QA summary |
 
 ### Expected Outputs From A Successful Full Run
@@ -320,6 +346,14 @@ The final notebook run should leave the repository with these artifacts under `d
 - `results_summary.csv`
 - `error_analysis_holdout.csv`
 - `top_tokens_by_class.csv`
+
+The final deployment-export step should also leave these artifacts under `models/`:
+
+- `tfidf_logreg_pipeline.joblib`
+- `tfidf_linearsvc_pipeline.joblib`
+- `roberta_rf_classifier.joblib`
+- `model_metadata.json`
+- `class_labels.json`
 
 For reporting and documentation, `results_summary.csv` should always be treated as the primary metrics source.
 
@@ -334,6 +368,7 @@ For reporting and documentation, `results_summary.csv` should always be treated 
 | Reproduce the final evaluation | `notebooks/02_text_classification_models.ipynb` on Colab T4 |
 | Refresh the dataset | `python src/pipeline.py` |
 | Inspect the final committed metrics | `data/processed/results_summary.csv` |
+| Demo live inference | `streamlit run app.py` |
 | Review the methodology | `docs/methods_and_results.md` and `docs/workflow.md` |
 
 ### Assignment 1 — Data Extraction Pipeline
@@ -365,12 +400,18 @@ This will:
    - and keeps the full processed dataset for the official TwitterRoBERTa evaluation path.
 4. Add a Colab Secret named `GITHUB_TOKEN` if you want authenticated clone/push from Colab
 5. Run all cells
-6. The final sync cell now stages and pushes the full Colab repo state by default when `GITHUB_TOKEN` is present; you can disable that by setting `AUTO_PUSH_CHANGES = False`
+6. The notebook now saves deployment-ready `.joblib` and JSON model artifacts under `models/`
+7. The final sync cell now stages and pushes the full Colab repo state by default when `GITHUB_TOKEN` is present; you can disable that by setting `AUTO_PUSH_CHANGES = False`
 
 **Expected outputs from the notebook run:**
 - `data/processed/results_summary.csv`
 - `data/processed/error_analysis_holdout.csv`
 - `data/processed/top_tokens_by_class.csv`
+- `models/tfidf_logreg_pipeline.joblib`
+- `models/tfidf_linearsvc_pipeline.joblib`
+- `models/roberta_rf_classifier.joblib`
+- `models/model_metadata.json`
+- `models/class_labels.json`
 
 #### Option B: Local Execution
 
@@ -382,6 +423,24 @@ The upgraded notebook also exports:
 - `data/processed/results_summary.csv`
 - `data/processed/error_analysis_holdout.csv`
 - `data/processed/top_tokens_by_class.csv`
+- `models/*.joblib`
+- `models/*.json`
+
+### Streamlit Dashboard
+
+After rerunning the notebook in Colab and pulling the saved model artifacts locally, launch the live inference dashboard with:
+
+```bash
+streamlit run app.py
+```
+
+The dashboard is designed for a polished classroom demo:
+- dark sidebar + bright card-based main canvas inspired by the NeuroFetal-AI layout
+- model switching across the saved inference artifacts
+- large classification decision card
+- probability visualization
+- benchmark snapshot from committed metrics
+- lightweight runtime explainability for sparse models
 
 ### Quarterly Automation (CI/CD)
 
@@ -437,6 +496,7 @@ This uses the [`schedule`](https://pypi.org/project/schedule/) library and runs 
 | **Embeddings** | [TwitterRoBERTa](https://huggingface.co/cardiffnlp/twitter-roberta-base) (HuggingFace Transformers) |
 | **ML** | scikit-learn (Logistic Regression, LinearSVC, Random Forest, TF-IDF) |
 | **Deep Learning** | PyTorch (CUDA / CPU) |
+| **Deployment / UI** | Streamlit · Plotly · joblib |
 | **Automation** | GitHub Actions CI/CD + `schedule` fallback |
 | **Environment** | venv · pip |
 | **Version Control** | Git + GitHub |
@@ -450,6 +510,7 @@ This uses the [`schedule`](https://pypi.org/project/schedule/) library and runs 
 - **Academic use only:** this project supports coursework, NLP experimentation, and comparative evaluation, not clinical screening or deployment.
 - **Privacy and ethics matter:** the source text comes from sensitive mental-health contexts and should be handled carefully in demos and reports.
 - **Transformer fallback mode:** local CPU runs use a 2,000-row sample for practicality; GPU/Colab remains the preferred path for official dense-model evaluation.
+- **Dashboard caution:** the Streamlit app is a live classroom demo interface for saved academic models, not a healthcare decision-support tool.
 
 ---
 

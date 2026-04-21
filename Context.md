@@ -1,7 +1,7 @@
 # Project Context — BDA: Reddit MDD NLP Corpus
 
 > **Living Document** — Updated throughout the project lifecycle.  
-> Last Updated: 2026-04-18
+> Last Updated: 2026-04-21
 
 ---
 
@@ -53,6 +53,8 @@
 | EDA & Language Pattern Detection (symptom keywords, word clouds, sentiment, bigrams, SHAP) | `.ipynb` | ✅ Complete |
 | Documentation of methods and results | `.md` | ✅ Complete |
 | Automated pipeline for quarterly updates | `.py` | ✅ Complete |
+| Saved deployment-ready model artifacts for live inference | `.joblib` / `.json` | 🚧 In Progress |
+| Streamlit dashboard for demo inference | `.py` | 🚧 In Progress |
 
 ## 6. Tech Stack
 
@@ -65,6 +67,7 @@
 | NLP | NLTK, regex, VADER Sentiment, wordcloud |
 | Embeddings | TwitterRoBERTa (`cardiffnlp/twitter-roberta-base`) |
 | ML | scikit-learn (Assignment 2) |
+| Deployment / UI | joblib, Streamlit, Plotly |
 | Data | pandas, numpy |
 | Version Control | Git + GitHub |
 
@@ -98,12 +101,20 @@ BDA-MDD-Reddit-NLP/
 │       ├── results_summary.csv
 │       ├── error_analysis_holdout.csv
 │       └── top_tokens_by_class.csv
+├── models/
+│   ├── tfidf_logreg_pipeline.joblib
+│   ├── tfidf_linearsvc_pipeline.joblib
+│   ├── roberta_rf_classifier.joblib
+│   ├── model_metadata.json
+│   └── class_labels.json
 ├── notebooks/
-│   ├── Assignment_1_PRAW_Extraction.ipynb    # Legacy notebook from the original PRAW plan
-│   └── 02_text_classification_models.ipynb     # TF-IDF, TwitterRoBERTa, SHAP
+│   ├── Assignment_1_PRAW_Extraction.ipynb      # Legacy notebook from the original PRAW plan
+│   └── 02_text_classification_models.ipynb     # TF-IDF, TwitterRoBERTa, SHAP, artifact export
 ├── src/
 │   ├── scraper.py              # PullPush API scraper using requests
 │   ├── pipeline.py             # Main Extraction & Cleaning pipeline
+│   ├── inference.py            # Shared loading/prediction logic for live inference
+│   ├── dashboard_utils.py      # Streamlit dashboard styling and helper utilities
 │   └── quarterly_updater.py    # Local automation fallback using schedule
 ├── docs/
 │   ├── assignments/
@@ -119,6 +130,7 @@ BDA-MDD-Reddit-NLP/
 │       └── quarterly_update.yml # CI/CD: auto-refresh dataset every quarter
 ├── .env.example
 ├── .gitignore
+├── app.py                      # Streamlit live inference dashboard
 ├── Context.md                  # This file
 ├── README.md                   # Professional repo README
 └── requirements.txt            # pip dependencies
@@ -147,6 +159,8 @@ BDA-MDD-Reddit-NLP/
 | 2026-04-18 | Dataset QA Hardening | Added duplicate removal, `text_hash`, and `dataset_summary.csv` generation to reduce leakage risk |
 | 2026-04-18 | Evaluation Upgrade | Added repeated CV, LinearSVC baseline, permutation test, learning curve, and holdout error analysis |
 | 2026-04-18 | Final Colab T4 Evaluation Run | Generated `results_summary.csv`, `error_analysis_holdout.csv`, and `top_tokens_by_class.csv` from the completed notebook run |
+| 2026-04-21 | Deployment Artifact Export | Added notebook support to save `.joblib` inference artifacts plus model metadata for live demo usage |
+| 2026-04-21 | Streamlit Dashboard Track | Added a Streamlit inference app inspired by the NeuroFetal-AI card-and-sidebar design pattern |
 
 ## 11. Latest Snapshot
 
@@ -162,6 +176,8 @@ BDA-MDD-Reddit-NLP/
 | **Best holdout model** | `TF-IDF + Logistic Regression` — accuracy `0.7841`, macro F1 `0.7355` |
 | **Permutation test** | macro F1 `0.7221`, `p = 0.032258` |
 | **Generated artifacts** | `dataset_summary.csv`, `results_summary.csv`, `error_analysis_holdout.csv`, `top_tokens_by_class.csv` |
+| **Planned deployment artifacts after Colab rerun** | `tfidf_logreg_pipeline.joblib`, `tfidf_linearsvc_pipeline.joblib`, `roberta_rf_classifier.joblib`, `model_metadata.json`, `class_labels.json` |
+| **Live demo entry point** | `streamlit run app.py` |
 
 ## 12. Risks & Mitigations
 
