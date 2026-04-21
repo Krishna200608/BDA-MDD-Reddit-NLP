@@ -95,6 +95,7 @@
 |:---|:---|
 | **Assignment 1** | Wrote `src/scraper.py` — PullPush API client with pagination, retries, and rate limiting |
 | **Assignment 2** | Set up GitHub/Colab integration — `GITHUB_TOKEN` secret, repo cloning, identity config |
+| **Streamlit UI (Frontend)** | Wrote `app.py` and `src/dashboard_utils.py`, integrating the NeuroFetal-AI matching Dark Mode CSS architecture and layout logic. |
 | **CI/CD** | Created `.github/workflows/quarterly_update.yml` — GitHub Actions for automated quarterly data refresh |
 | **Infrastructure** | Repository setup, Git workflow, environment configuration |
 
@@ -114,6 +115,7 @@
 | **Assignment 2 — Model B** | TwitterRoBERTa embeddings (768-dim dense vectors) + Random Forest classifier (100 estimators) |
 | **Assignment 2 — EDA** | DSM-5 symptom keyword analysis, word clouds, sentiment distribution, post length analysis, top bigrams, SHAP explainability |
 | **Hardware** | Implemented dynamic GPU/CPU detection (full dataset on T4 GPU, 2k subset on CPU) and upgraded text-embedding generation to PyTorch batched iteration with TQDM progress tracking |
+| **Streamlit UI (Data & XAI)** | Wrote `src/inference.py`, designed the interactive Plotly rendering logic for the dashboard, and mapped the saved model artifacts back to live benchmarks. |
 
 **Key talking points:**
 - "I built the classification comparison stack for the final three-class severity problem: TF-IDF + Logistic Regression, TF-IDF + LinearSVC, and TwitterRoBERTa + Random Forest."
@@ -150,6 +152,9 @@
 | `src/pipeline.py` (clean_text, preprocessing) | Priyam |
 | `src/pipeline.py` (main orchestration, VADER) | Tavish |
 | `src/quarterly_updater.py` | Tavish |
+| `src/inference.py` | Priyam |
+| `src/dashboard_utils.py` | Krishna |
+| `app.py` | Krishna |
 | `notebooks/Assignment_1_PRAW_Extraction.ipynb` | Tavish |
 | `notebooks/02_text_classification_models.ipynb` (TF-IDF + LR) | Priyam |
 | `notebooks/02_text_classification_models.ipynb` (TwitterRoBERTa + RF) | Priyam |

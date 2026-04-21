@@ -436,13 +436,12 @@ After rerunning the notebook in Colab and pulling the saved model artifacts loca
 streamlit run app.py
 ```
 
-The dashboard is designed for a polished classroom demo:
-- dark sidebar + bright card-based main canvas inspired by the NeuroFetal-AI layout
-- model switching across the saved inference artifacts
-- large classification decision card
-- probability visualization
-- benchmark snapshot from committed metrics
-- lightweight runtime explainability for sparse models
+The dashboard is designed for a polished, clinical-grade classroom demo:
+- **NeuroFetal-AI Inspired UI:** Dark sidebar UI with a bright card-based main canvas and an identical custom-built dark mode pill-toggle button. 
+- **Responsive Layouts:** Full integration of auto-scaling, margin-aware Plotly charts replacing static tables.
+- **Model Switching:** Instantly swap across the saved inference artifacts via the dropdown.
+- **Explainable AI (XAI):** Lightweight runtime SHAP explainability for sparse models via Plotly `probability_charts` and `explanation_charts`.
+- **Dynamic Session State:** Correctly triggers interface reruns via `st.session_state` when loading new clinical text samples or interacting with the dark mode switch.
 
 ### Quarterly Automation (CI/CD)
 

@@ -108,6 +108,8 @@ The notebook computes SHAP summaries for the Logistic Regression pipeline and al
 
 These tokens align with the class definitions and also explain the main error pattern: moderate and severe posts frequently share depressive vocabulary, while explicit self-harm and ideation terms provide the clearest separation into the Severe Ideation tier.
 
+> **Production Application:** This runtime SHAP extraction serves directly into the live academic dashboard via interactive **Plotly charts**, delivering real-time clinical AI explainability when reviewing single-post inputs.
+
 ---
 
 ## 3. Exploratory Data Analysis and Language Pattern Detection

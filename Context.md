@@ -24,6 +24,11 @@ This repository is no longer just a data-collection assignment. It is now an end
 - exported inference-ready model artifacts
 - a local-first Streamlit dashboard for live demo inference
 
+Important agent note:
+- `Context.md` is the best high-level handoff document in the repo.
+- It is sufficient for project-level understanding.
+- For full implementation-level understanding, another agent should pair this file with the key code and source-of-truth artifacts listed below.
+
 ---
 
 ## 2. Team
@@ -93,6 +98,17 @@ It is **not** intended for:
 - Dataset QA source of truth: `data/processed/dataset_summary.csv`
 - Saved deployment registry: `models/model_metadata.json`
 - Label-order source of truth: `models/class_labels.json`
+
+### Required companion files for full code understanding
+
+If an agent needs complete understanding of both project intent and current implementation, it should read:
+- `Context.md` for project history, architecture, constraints, and current-state guidance
+- `models/model_metadata.json` for the deployment/inference contract
+- `data/processed/results_summary.csv` for final committed metrics
+- `src/inference.py` for runtime model loading and prediction behavior
+- `app.py` for current Streamlit dashboard structure
+- `src/pipeline.py` for training-data cleaning, QA, and feature-generation logic
+- `git status` to distinguish committed repo truth from local uncommitted work
 
 ---
 
@@ -356,7 +372,7 @@ This is expected behavior, not a bug.
 | 2026-04-21 | Built Streamlit demo app | local-first live inference experience |
 | 2026-04-21 | Kept executed notebook committed | coursework evidence retained in repo |
 | 2026-04-21 | Fixed live sparse preprocessing alignment | dashboard sparse inference now matches training-time cleaning |
-| 2026-04-21 | Simplified dashboard layout | reduced clutter and improved visibility |
+| 2026-04-21 | Upgraded dashboard appearance | implemented responsive Plotly charts and a NeuroFetal-AI styled dynamic dark mode toggle |
 
 ---
 
@@ -390,11 +406,12 @@ This matters because this repo mixes:
 
 If another agent enters this repo, recommended first steps are:
 
-1. Read `git status` to separate committed repo truth from local uncommitted work.
-2. Read `models/model_metadata.json` to understand the live inference contract.
-3. Read `src/inference.py` and `app.py` together to understand current dashboard behavior.
+1. Read `Context.md` first for the high-level handoff and current architecture.
+2. Read `git status` to separate committed repo truth from local uncommitted work.
+3. Read `models/model_metadata.json` to understand the live inference contract.
 4. Read `data/processed/results_summary.csv` for the final metrics source of truth.
-5. Only then modify docs / dashboard / notebook as needed.
+5. Read `src/inference.py`, `app.py`, and `src/pipeline.py` for code-level understanding.
+6. Only then modify docs / dashboard / notebook as needed.
 
 ---
 
@@ -404,4 +421,4 @@ This project is a 3-class Reddit mental-health NLP coursework pipeline with QA-s
 
 ---
 
-> **Final note for agents:** Treat `results_summary.csv` as the metrics source of truth, `model_metadata.json` as the deployment source of truth, and `git status` as the source of truth for whether the latest dashboard/context refinements are already committed.
+> **Final note for agents:** `Context.md` gives the project-level picture, but full code-level understanding requires reading `model_metadata.json`, `results_summary.csv`, `src/inference.py`, `app.py`, `src/pipeline.py`, and `git status` alongside it.

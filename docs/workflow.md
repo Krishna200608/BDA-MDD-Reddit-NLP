@@ -111,6 +111,20 @@ To fulfill the automation requirement, the repo supports two update paths:
 
 ---
 
+## Phase 4: Production Dashboard UI
+
+### 4.1 Live Inference Application
+An end-to-end `streamlit` web application (`app.py`) is deployed for live academic demonstration of the saved `joblib` artifacts.
+- Automatically processes clinical text inputs identically to the training-time preprocessing pipeline.
+- Implements a dynamic UI referencing **NeuroFetal-AI** clinical dashboards. 
+- Employs **Plotly** to render interactive XAI Log-Odds visual vectors and static JSON-derived benchmark metrics.
+
+### 4.2 State Management and Theming
+- Native Streamlit widgets have been overwritten using Python-injected CSS styling to build custom switches (including a dynamic dark mode knob).
+- Elements are responsive and utilize `st.session_state` callbacks to seamlessly switch data sources or visual layers without requiring hard refreshes.
+
+---
+
 ## 4. Archival Outputs
 Generated assets serving the downstream project operations:
 - `data/raw/reddit_raw.csv` — the raw scrape output, targeting 10,000 posts before post-cleaning filters.
