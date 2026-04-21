@@ -421,7 +421,7 @@ def probability_chart(probabilities: dict[str, float]):
 def render_summary_chips(items: list[tuple[str, str]]) -> None:
     # Stripped away the bulky HTML div blocks that clustered the UI to use a native dataframe/table instead.
     table_data = [{"Metric": k, "Value": v} for k, v in items]
-    st.dataframe(pd.DataFrame(table_data), use_container_width=True, hide_index=True)
+    st.dataframe(pd.DataFrame(table_data), width="stretch", hide_index=True)
 
 
 def benchmark_chart(benchmark_row: dict | None):

@@ -105,8 +105,8 @@ text_value = st.sidebar.text_area(
 )
 st.session_state.input_text = text_value
 
-predict_clicked = st.sidebar.button("Run Live Inference", type="primary", use_container_width=True)
-reset_clicked = st.sidebar.button("Clear Result", use_container_width=True)
+predict_clicked = st.sidebar.button("Run Live Inference", type="primary", width="stretch")
+reset_clicked = st.sidebar.button("Clear Result", width="stretch")
 
 st.sidebar.markdown("### Deployment Status")
 if selected_model_info.get("is_available"):
@@ -193,7 +193,7 @@ if prediction is None:
                 "OS Path": model_info.get("resolved_artifact_path", ""),
             }
         )
-    st.dataframe(status_rows, use_container_width=True, hide_index=True)
+    st.dataframe(status_rows, width="stretch", hide_index=True)
     st.markdown(
         """
         <div class="warning-box">
@@ -222,7 +222,7 @@ else:
 
     with primary_cols[1]:
         start_panel("Probability Analysis", "A compact geometric view showing how strongly the backend leans toward each tier.")
-        st.plotly_chart(probability_chart(prediction.probabilities), use_container_width=True, theme=None)
+        st.plotly_chart(probability_chart(prediction.probabilities), width="stretch", theme=None)
 
     st.divider()
 
@@ -233,7 +233,7 @@ else:
         summary_cols = st.columns(2)
         with summary_cols[0]:
             start_panel("Evaluation Benchmark Snapshot")
-            st.plotly_chart(benchmark_chart(prediction.benchmark_row), use_container_width=True, theme=None)
+            st.plotly_chart(benchmark_chart(prediction.benchmark_row), width="stretch", theme=None)
             if prediction.model_key == "roberta_rf":
                 st.caption("First RoBERTa inference may natively lag due to huggingface cache loads.")
         
@@ -246,11 +246,11 @@ else:
                 {"Parameter": "Artifact Key", "Recorded Info": selected_model_key},
             ]
             import pandas as pd
-            st.dataframe(pd.DataFrame(meta_data), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(meta_data), width="stretch", hide_index=True)
 
     with analysis_tabs[1]:
         start_panel("Model Attention / Log-Odds Trace", "Extracting exactly which word-level identifiers triggered the severity scale threshold.")
-        st.plotly_chart(explanation_chart(prediction.explanation_rows), use_container_width=True, theme=None)
+        st.plotly_chart(explanation_chart(prediction.explanation_rows), width="stretch", theme=None)
         if not prediction.explanation_rows:
             st.caption("⚠️ Dense Transformer features (like TwitterRoBERTa) cannot physically map back to specific token words linearly. Select TF-IDF for full XAI traces.")
 
