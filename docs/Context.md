@@ -25,7 +25,7 @@ This repository is no longer just a data-collection assignment. It is now an end
 - a local-first Streamlit dashboard for live demo inference
 
 Important agent note:
-- `Context.md` is the best high-level handoff document in the repo.
+- `docs/Context.md` is the best high-level handoff document in the repo.
 - It is sufficient for project-level understanding.
 - For full implementation-level understanding, another agent should pair this file with the key code and source-of-truth artifacts listed below.
 
@@ -102,7 +102,7 @@ It is **not** intended for:
 ### Required companion files for full code understanding
 
 If an agent needs complete understanding of both project intent and current implementation, it should read:
-- `Context.md` for project history, architecture, constraints, and current-state guidance
+- `docs/Context.md` for project history, architecture, constraints, and current-state guidance
 - `models/model_metadata.json` for the deployment/inference contract
 - `data/processed/results_summary.csv` for final committed metrics
 - `src/inference.py` for runtime model loading and prediction behavior
@@ -352,7 +352,7 @@ This is expected behavior, not a bug.
 | `docs/workflow.md` | pipeline and methodology narrative |
 | `docs/methods_and_results.md` | evaluation interpretation |
 | `docs/team_work_division.md` | viva / contribution notes |
-| `Context.md` | this full handoff and current-state guide |
+| `docs/Context.md` | this full handoff and current-state guide |
 
 ---
 
@@ -406,7 +406,7 @@ This matters because this repo mixes:
 
 If another agent enters this repo, recommended first steps are:
 
-1. Read `Context.md` first for the high-level handoff and current architecture.
+1. Read `docs/Context.md` first for the high-level handoff and current architecture.
 2. Read `git status` to separate committed repo truth from local uncommitted work.
 3. Read `models/model_metadata.json` to understand the live inference contract.
 4. Read `data/processed/results_summary.csv` for the final metrics source of truth.
@@ -421,4 +421,4 @@ This project is a 3-class Reddit mental-health NLP coursework pipeline with QA-s
 
 ---
 
-> **Final note for agents:** `Context.md` gives the project-level picture, but full code-level understanding requires reading `model_metadata.json`, `results_summary.csv`, `src/inference.py`, `app.py`, `src/pipeline.py`, and `git status` alongside it.
+> **Final note for agents:** `docs/Context.md` gives the project-level picture, but full code-level understanding requires reading `model_metadata.json`, `results_summary.csv`, `src/inference.py`, `app.py`, `src/pipeline.py`, and `git status` alongside it.

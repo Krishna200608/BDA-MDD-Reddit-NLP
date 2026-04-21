@@ -187,7 +187,7 @@ In practice, this means the project is not just a notebook with a single accurac
 
 | File | Role |
 |:---|:---|
-| [`Context.md`](Context.md) | Living project context, decisions log, and current committed snapshot |
+| [`docs/Context.md`](docs/Context.md) | Living project context, decisions log, and current committed snapshot |
 | [`docs/workflow.md`](docs/workflow.md) | End-to-end data and modeling pipeline description |
 | [`docs/methods_and_results.md`](docs/methods_and_results.md) | Final evaluation narrative, methodology, and interpretation |
 | [`docs/team_work_division.md`](docs/team_work_division.md) | Viva/demo cheat sheet by contributor |
@@ -285,6 +285,7 @@ BDA-MDD-Reddit-NLP/
 │   ├── assignments/
 │   │   └── Our_Project_Task.md               # Original grading rubric
 │   ├── assets/                               # Reference PDFs & briefs
+│   ├── Context.md                            # Living project context document
 │   ├── methods_and_results.md                # Evaluation report
 │   ├── workflow.md                           # Data pipeline documentation
 │   └── team_work_division.md                 # Group work allocation cheat sheet
@@ -292,7 +293,6 @@ BDA-MDD-Reddit-NLP/
 ├── .env.example                              # Environment variable template
 ├── .gitignore
 ├── app.py                                    # Streamlit live inference dashboard
-├── Context.md                                # Living project context document
 ├── README.md                                 # ← You are here
 └── requirements.txt                          # Python dependencies
 ```

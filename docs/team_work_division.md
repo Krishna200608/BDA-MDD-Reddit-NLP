@@ -164,7 +164,7 @@
 | `docs/workflow.md` | Tavish |
 | `docs/methods_and_results.md` | Tavish |
 | `README.md` | Tavish |
-| `Context.md` | Tavish |
+| `docs/Context.md` | Tavish |
 | `requirements.txt` / `.gitignore` / `.env.example` | Krishna |
 
 ---
