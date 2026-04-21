@@ -251,19 +251,34 @@ flowchart TD
 
 ## Project Structure
 
-```
+```text
 BDA-MDD-Reddit-NLP/
 │
+├── .github/workflows/
+│   └── quarterly_update.yml              # CI/CD cron for dataset refresh
+│
+├── .streamlit/
+│   └── config.toml                       # Streamlit Cloud deployment config
+│
 ├── data/
-│   ├── raw/                                  # Raw scraped CSVs
-│   └── processed/                            # Cleaned & labeled dataset + QA/eval artifacts
+│   ├── raw/                              # Raw scraped CSVs (git-ignored)
+│   └── processed/                        # Cleaned dataset + QA/eval artifacts
 │       ├── reddit_mdd_cleaned.csv
 │       ├── dataset_summary.csv
 │       ├── results_summary.csv
 │       ├── error_analysis_holdout.csv
 │       └── top_tokens_by_class.csv
 │
-├── models/                                   # Saved deployment artifacts for live inference
+├── docs/
+│   ├── assignments/
+│   │   └── Our_Project_Task.md           # Original grading rubric
+│   ├── assets/                           # Reference PDFs
+│   ├── Context.md                        # Living project context
+│   ├── methods_and_results.md            # Evaluation report
+│   ├── workflow.md                       # Pipeline documentation
+│   └── team_work_division.md             # Work allocation cheat sheet
+│
+├── models/                               # Saved deployment artifacts
 │   ├── tfidf_logreg_pipeline.joblib
 │   ├── tfidf_linearsvc_pipeline.joblib
 │   ├── roberta_rf_classifier.joblib
@@ -271,30 +286,22 @@ BDA-MDD-Reddit-NLP/
 │   └── class_labels.json
 │
 ├── notebooks/
-│   ├── Assignment_1_PRAW_Extraction.ipynb    # Legacy notebook from the original PRAW plan
-│   └── 02_text_classification_models.ipynb   # QA, ML comparison, CV, SHAP, EDA, and model export
+│   ├── Assignment_1_PRAW_Extraction.ipynb
+│   └── 02_text_classification_models.ipynb
 │
-├── src/
-│   ├── scraper.py                            # PullPush API client
-│   ├── pipeline.py                           # End-to-end extraction + cleaning
-│   ├── inference.py                          # Shared model loading and prediction logic
-│   ├── dashboard_utils.py                    # Streamlit styling and chart helpers
-│   └── quarterly_updater.py                  # Local 90-day refresh fallback
+├── src/                                  # Python package — runtime modules
+│   ├── __init__.py
+│   ├── scraper.py                        # PullPush API client
+│   ├── pipeline.py                       # Extraction + cleaning
+│   ├── inference.py                      # Model loading & prediction
+│   ├── dashboard_utils.py                # Streamlit styling & charts
+│   └── quarterly_updater.py              # Local 90-day refresh
 │
-├── docs/
-│   ├── assignments/
-│   │   └── Our_Project_Task.md               # Original grading rubric
-│   ├── assets/                               # Reference PDFs & briefs
-│   ├── Context.md                            # Living project context document
-│   ├── methods_and_results.md                # Evaluation report
-│   ├── workflow.md                           # Data pipeline documentation
-│   └── team_work_division.md                 # Group work allocation cheat sheet
-│
-├── .env.example                              # Environment variable template
+├── .env.example
 ├── .gitignore
-├── app.py                                    # Streamlit live inference dashboard
-├── README.md                                 # ← You are here
-└── requirements.txt                          # Python dependencies
+├── app.py                                # Streamlit dashboard entry point
+├── README.md
+└── requirements.txt
 ```
 
 ---

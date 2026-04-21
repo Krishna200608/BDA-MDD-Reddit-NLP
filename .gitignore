@@ -1,29 +1,47 @@
-# Environments
+# ──────────────────────────────────────────────
+# Environments & Secrets
+# ──────────────────────────────────────────────
 .env
-.venv
+.venv/
 env/
 venv/
 ENV/
-env.bak/
-venv.bak/
+.streamlit/secrets.toml
 
-# Byte-compiled / optimized / DLL files
+# ──────────────────────────────────────────────
+# Python bytecode
+# ──────────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *$py.class
+*.egg-info/
+dist/
+build/
 
-# Jupyter Notebook
-.ipynb_checkpoints
+# ──────────────────────────────────────────────
+# Jupyter
+# ──────────────────────────────────────────────
+.ipynb_checkpoints/
 
-# Data
+# ──────────────────────────────────────────────
+# Data (raw is large; processed is synced from Colab)
+# ──────────────────────────────────────────────
 data/raw/*
 !data/raw/.gitkeep
-# data/processed/* (Un-ignored to permit Google Colab syncing)
 !data/processed/.gitkeep
 
-# OS generated files
+# ──────────────────────────────────────────────
+# OS & IDE
+# ──────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+*.swp
+.idea/
+.vscode/
+*.code-workspace
 
-# Temporary artifacts
+# ──────────────────────────────────────────────
+# Scratch / temporary
+# ──────────────────────────────────────────────
 tmp/
+scratch/
