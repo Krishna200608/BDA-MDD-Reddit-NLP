@@ -38,7 +38,7 @@ The preprocessing pipeline lives in `src/pipeline.py`.
 - **Regex cleaning:** URL removal, newline stripping, non-alphabet filtering, and multi-space collapsing.
 - **Stop words:** NLTK English stopword filtering.
 - **Retention rule:** posts with fewer than 5 cleaned words are dropped.
-- **Outputs:** `data/raw/reddit_raw.csv`, `data/processed/reddit_mdd_cleaned.csv`, and `data/processed/dataset_summary.csv`.
+- **Outputs:** `data/raw/reddit_raw.csv`, `data/processed/reddit_mdd_cleaned.csv` (yielding a final hardened dataset of 9,607 rows), and `data/processed/dataset_summary.csv`.
 
 ### 1.4 Feature Engineering
 We compute a baseline sentiment feature using **VADER** on the original uncleaned `selftext`.
@@ -70,7 +70,7 @@ To evaluate predictive configurations, we designed a complementary experimental 
 - **Track A (Sparse Baseline — Classical AI):** A **TF-IDF Vectorizer** captured the top 5,000 predictive unigrams and bigrams. This is now paired with two sparse baselines:
   - **Logistic Regression** with balanced class weights
   - **LinearSVC** with balanced class weights
-- **Track B (Dense Text Modeling — Deep AI):** Text sequences passed through HuggingFace's **TwitterRoBERTa** (`cardiffnlp/twitter-roberta-base`). We extracted 768-dimensional dense representations and fed them into a **Random Forest Classifier** (100 estimators).
+- **Track B (Dense Text Modeling — Deep AI):** Text sequences passed through HuggingFace's **TwitterRoBERTa** (`cardiffnlp/twitter-roberta-base`, successfully resolving previous HuggingFace 401 Gated Repository restrictions). We extracted 768-dimensional dense representations using **batched PyTorch iteration with TQDM acceleration**, and fed them into a **Random Forest Classifier** (100 estimators).
 
 ### 2.3 Execution Profile
 - The official dense-model path is **Google Colab with a T4 GPU**, which keeps the full processed dataset for TwitterRoBERTa feature extraction.

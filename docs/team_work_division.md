@@ -64,7 +64,7 @@
 - Implemented the VADER sentiment analysis layer — computes the `sentiment_score` (compound polarity) for every post using the uncleaned `selftext` so we don't lose emotional punctuation cues.
 - Orchestrated the full pipeline flow: data collection → raw CSV export → cleaning → feature engineering → processed CSV export.
 - Added the QA hardening layer: duplicate removal, `text_hash`, and `dataset_summary.csv` generation before modeling.
-- Validated the final dataset structure: checked schema, class distribution, and processed-output integrity after filtering. The current committed snapshot is three-class and deduplicated below the 10,000 raw target.
+- Validated the final dataset structure: checked schema, class distribution, and processed-output integrity after filtering. The current committed snapshot is three-class and securely deduplicated to a final 9,607 rows.
 - Wrote all documentation: `docs/workflow.md`, the Assignment 1 notebook walkthrough (`notebooks/Assignment_1_PRAW_Extraction.ipynb`).
 - Set up the project structure: `requirements.txt`, `.gitignore`, directory layout.
 
@@ -113,11 +113,11 @@
 | **Assignment 2 — Model A2** | TF-IDF vectorizer + LinearSVC comparison baseline |
 | **Assignment 2 — Model B** | TwitterRoBERTa embeddings (768-dim dense vectors) + Random Forest classifier (100 estimators) |
 | **Assignment 2 — EDA** | DSM-5 symptom keyword analysis, word clouds, sentiment distribution, post length analysis, top bigrams, SHAP explainability |
-| **Hardware** | Implemented dynamic GPU/CPU detection — full dataset on T4 GPU, 2,000-sample subset on CPU |
+| **Hardware** | Implemented dynamic GPU/CPU detection (full dataset on T4 GPU, 2k subset on CPU) and upgraded text-embedding generation to PyTorch batched iteration with TQDM progress tracking |
 
 **Key talking points:**
 - "I built the classification comparison stack for the final three-class severity problem: TF-IDF + Logistic Regression, TF-IDF + LinearSVC, and TwitterRoBERTa + Random Forest."
-- "We moved away from older clinical-note model choices and used `cardiffnlp/twitter-roberta-base` because it is trained on social-media text and better matches informal online language."
+- "We shifted to `cardiffnlp/twitter-roberta-base` because it perfectly matches informal online language and it bypassed the HuggingFace "401 Gated Repo" restrictions that were breaking our automated Colab pipeline."
 - "The notebook now reports both a fixed holdout split and a stronger repeated cross-validation summary, so the results are easier to defend in front of the instructor."
 - "The notebook auto-detects hardware: if a CUDA GPU is available, it evaluates the full processed dataset; otherwise it subsamples to 2,000 rows for local CPU practicality."
 - "I also implemented the EDA section with six analyses plus SHAP, a learning curve, a permutation test, and an explicit error-analysis export."
