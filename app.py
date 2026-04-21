@@ -139,7 +139,7 @@ render_hero(
 
 input_stats = summarize_input_text(st.session_state.input_text)
 
-# Ensure proper metrics alignment like in NeuroFetal
+# Ensure proper metrics alignment
 st.divider()
 
 top_cols = st.columns(4)

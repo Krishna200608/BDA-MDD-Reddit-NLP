@@ -394,7 +394,7 @@ def probability_chart(probabilities: dict[str, float]):
         "Moderate MDD": "#f59e0b", # Yellow
         "Severe Ideation": "#ef4444", # Red
     }
-    # Standard NeuroFetal Bar chart layout
+    # Standard Bar chart layout
     fig = px.bar(
         chart_df,
         x="probability",

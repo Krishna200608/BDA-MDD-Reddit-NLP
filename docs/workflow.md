@@ -116,7 +116,7 @@ To fulfill the automation requirement, the repo supports two update paths:
 ### 4.1 Live Inference Application
 An end-to-end `streamlit` web application (`app.py`) is deployed for live academic demonstration of the saved `joblib` artifacts.
 - Automatically processes clinical text inputs identically to the training-time preprocessing pipeline.
-- Implements a dynamic UI referencing **NeuroFetal-AI** clinical dashboards. 
+- Implements a dynamic, professional clinical dashboard UI. 
 - Employs **Plotly** to render interactive XAI Log-Odds visual vectors and static JSON-derived benchmark metrics.
 
 ### 4.2 State Management and Theming

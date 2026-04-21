@@ -95,7 +95,7 @@
 |:---|:---|
 | **Assignment 1** | Wrote `src/scraper.py` — PullPush API client with pagination, retries, and rate limiting |
 | **Assignment 2** | Set up GitHub/Colab integration — `GITHUB_TOKEN` secret, repo cloning, identity config |
-| **Streamlit UI (Frontend)** | Wrote `app.py` and `src/dashboard_utils.py`, integrating the NeuroFetal-AI matching Dark Mode CSS architecture and layout logic. |
+| **Streamlit UI (Frontend)** | Wrote `app.py` and `src/dashboard_utils.py`, integrating the clinical-grade Dark Mode CSS architecture and layout logic. |
 | **CI/CD** | Created `.github/workflows/quarterly_update.yml` — GitHub Actions for automated quarterly data refresh |
 | **Infrastructure** | Repository setup, Git workflow, environment configuration |
 

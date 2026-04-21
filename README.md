@@ -444,7 +444,7 @@ streamlit run app.py
 ```
 
 The dashboard is designed for a polished, clinical-grade classroom demo:
-- **NeuroFetal-AI Inspired UI:** Dark sidebar UI with a bright card-based main canvas and an identical custom-built dark mode pill-toggle button. 
+- **Clinical-Grade UI:** Dark sidebar UI with a bright card-based main canvas and a custom-built dark mode pill-toggle button. 
 - **Responsive Layouts:** Full integration of auto-scaling, margin-aware Plotly charts replacing static tables.
 - **Model Switching:** Instantly swap across the saved inference artifacts via the dropdown.
 - **Explainable AI (XAI):** Lightweight runtime SHAP explainability for sparse models via Plotly `probability_charts` and `explanation_charts`.
