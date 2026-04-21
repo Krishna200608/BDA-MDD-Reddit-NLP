@@ -34,7 +34,7 @@ st.set_page_config(
 
 # Dark Mode Toggle placement at top right
 if "dark_mode" not in st.session_state:
-    st.session_state.dark_mode = False
+    st.session_state.dark_mode = True
 
 def toggle_theme():
     st.session_state.dark_mode = not st.session_state.dark_mode
