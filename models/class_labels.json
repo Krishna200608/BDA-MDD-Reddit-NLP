@@ -1,0 +1,17 @@
+{
+  "label_order": [
+    "Control",
+    "Moderate MDD",
+    "Severe Ideation"
+  ],
+  "label_to_target": {
+    "Control": 0,
+    "Moderate MDD": 1,
+    "Severe Ideation": 2
+  },
+  "target_to_label": {
+    "0": "Control",
+    "1": "Moderate MDD",
+    "2": "Severe Ideation"
+  }
+}
