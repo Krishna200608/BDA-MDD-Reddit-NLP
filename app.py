@@ -12,6 +12,7 @@ from src.dashboard_utils import (
     render_hero,
     render_metric_card,
     render_sidebar_brand,
+    render_summary_chips,
     start_panel,
 )
 from src.inference import (
@@ -41,6 +42,12 @@ sample_inputs = get_sample_inputs()
 
 if "input_text" not in st.session_state:
     st.session_state.input_text = next(iter(sample_inputs.values()))
+if "prediction_result" not in st.session_state:
+    st.session_state.prediction_result = None
+if "prediction_error" not in st.session_state:
+    st.session_state.prediction_error = None
+if "selected_model_key" not in st.session_state:
+    st.session_state.selected_model_key = default_model_key
 
 available_model_options = {
     model_info["display_name"]: model_key
@@ -59,11 +66,17 @@ selected_model_display = st.sidebar.selectbox(
     ),
 )
 selected_model_key = available_model_options[selected_model_display]
+if st.session_state.selected_model_key != selected_model_key:
+    st.session_state.selected_model_key = selected_model_key
+    st.session_state.prediction_result = None
+    st.session_state.prediction_error = None
 selected_model_info = available_models[selected_model_key]
 
 sample_name = st.sidebar.selectbox("Load sample text", list(sample_inputs.keys()))
 if st.sidebar.button("Use selected sample", use_container_width=True):
     st.session_state.input_text = sample_inputs[sample_name]
+    st.session_state.prediction_result = None
+    st.session_state.prediction_error = None
 
 st.sidebar.markdown("### Text Input")
 text_value = st.sidebar.text_area(
@@ -75,6 +88,7 @@ text_value = st.sidebar.text_area(
 st.session_state.input_text = text_value
 
 predict_clicked = st.sidebar.button("Run Live Inference", type="primary", use_container_width=True)
+reset_clicked = st.sidebar.button("Clear Result", use_container_width=True)
 
 st.sidebar.markdown("### Deployment Status")
 if selected_model_info.get("is_available"):
@@ -122,24 +136,33 @@ with top_cols[3]:
     )
 
 prediction = None
-prediction_error = None
 
 if predict_clicked:
     if not st.session_state.input_text.strip():
-        prediction_error = "Please enter some text before running inference."
+        st.session_state.prediction_result = None
+        st.session_state.prediction_error = "Please enter some text before running inference."
     else:
         try:
-            prediction = predict_text(selected_model_key, st.session_state.input_text)
+            st.session_state.prediction_result = predict_text(selected_model_key, st.session_state.input_text)
+            st.session_state.prediction_error = None
         except Exception as exc:  # pragma: no cover - UI guard
-            prediction_error = str(exc)
+            st.session_state.prediction_result = None
+            st.session_state.prediction_error = str(exc)
+
+if reset_clicked:
+    st.session_state.prediction_result = None
+    st.session_state.prediction_error = None
+
+prediction = st.session_state.prediction_result
+prediction_error = st.session_state.prediction_error
 
 if prediction_error:
     st.error(prediction_error)
 
 if prediction is None:
-    st.info("Use the left sidebar to load example text or paste your own Reddit-style post, then click `Run Live Inference`.")
+    st.info("Use the left sidebar to load an example or paste your own Reddit-style post, then click `Run Live Inference`.")
 
-    start_panel("Model Export Status", "This dashboard is ready, but live model files may still need to be generated from the Colab notebook.")
+    start_panel("Model Export Status", "The dashboard shell is ready. This panel shows whether the live inference artifacts are present locally.")
     status_rows = []
     for model_key, model_info in available_models.items():
         status_rows.append(
@@ -160,7 +183,17 @@ if prediction is None:
     )
     end_panel()
 else:
-    primary_cols = st.columns([1.05, 1.95])
+    overview_cols = st.columns(4)
+    with overview_cols[0]:
+        render_metric_card("Predicted Label", prediction.predicted_label, "Current live model output")
+    with overview_cols[1]:
+        render_metric_card("Confidence", f"{prediction.confidence * 100:.1f}%", "Top class probability")
+    with overview_cols[2]:
+        render_metric_card("Model", prediction.model_display_name, "Active inference backend")
+    with overview_cols[3]:
+        render_metric_card("Input Size", f"{input_stats['words']} words", f"{input_stats['characters']} characters")
+
+    primary_cols = st.columns([1.0, 1.7])
     with primary_cols[0]:
         descriptions = {
             "Control": "Language appears closer to neutral or everyday conversational patterns.",
@@ -174,53 +207,68 @@ else:
         )
 
     with primary_cols[1]:
-        start_panel("Live Probability Analysis", "The chart below shows the full class distribution returned by the selected inference model.")
+        start_panel("Live Probability Analysis", "A compact probability view designed for quick explanation during a live classroom demo.")
+        render_summary_chips(
+            [
+                ("Default Model", "TF-IDF + Logistic Regression"),
+                ("Runtime", "Saved artifact loaded"),
+                ("Best Holdout", "0.7841 accuracy" if prediction.benchmark_row else "Benchmark unavailable"),
+            ]
+        )
         st.plotly_chart(probability_chart(prediction.probabilities), use_container_width=True)
+        st.caption("The bar chart shows how strongly the selected model leans toward each severity class for the current input.")
         end_panel()
 
-    summary_cols = st.columns([1.05, 1.95])
-    with summary_cols[0]:
-        start_panel("Model Summary", "Quick benchmark snapshot and run metadata for the selected model.")
-        summary_table = benchmark_table_row(prediction.benchmark_row)
-        st.dataframe(summary_table, use_container_width=True, hide_index=True)
-        st.markdown("**Runtime notes**")
-        for note in prediction.runtime_notes:
-            st.markdown(f"- {note}")
-        end_panel()
+    analysis_tabs = st.tabs(["Model Snapshot", "Explainability", "Input Trace"])
 
-    with summary_cols[1]:
-        start_panel("Explainable AI (XAI) Analysis", "This section highlights the input cues that most influenced the model decision.")
+    with analysis_tabs[0]:
+        summary_cols = st.columns([1.05, 1.15])
+        with summary_cols[0]:
+            start_panel("Model Summary", "Benchmark snapshot for the currently selected model.")
+            summary_table = benchmark_table_row(prediction.benchmark_row)
+            st.dataframe(summary_table, use_container_width=True, hide_index=True)
+            if prediction.model_key == "roberta_rf":
+                st.caption("First RoBERTa inference may take longer while the Hugging Face encoder loads from cache.")
+            end_panel()
+
+        with summary_cols[1]:
+            start_panel("Inference Summary", "Compact run metadata inspired by the clean clinical-summary card pattern from the reference dashboard.")
+            render_summary_chips(
+                [
+                    ("Predicted Label", prediction.predicted_label),
+                    ("Confidence", f"{prediction.confidence * 100:.2f}%"),
+                    ("Words", str(input_stats["words"])),
+                    ("Characters", str(input_stats["characters"])),
+                ]
+            )
+            st.markdown("**Runtime notes**")
+            for note in prediction.runtime_notes:
+                st.markdown(f"- {note}")
+            end_panel()
+
+    with analysis_tabs[1]:
+        start_panel("Explainable AI (XAI) Analysis", "A lightweight runtime explanation view for the saved models.")
         st.dataframe(explanation_table(prediction.explanation_rows), use_container_width=True, hide_index=True)
         if not prediction.explanation_rows:
-            st.caption("Runtime token explanation is currently available for the saved sparse models. The RoBERTa path shows preprocessing/runtime notes instead.")
+            st.caption("Runtime token explanation is currently available for the sparse models. The RoBERTa path surfaces preprocessing/runtime notes instead.")
         end_panel()
 
-    detail_cols = st.columns([1.1, 1.9])
-    with detail_cols[0]:
-        start_panel("Inference Summary", "A compact prediction record inspired by the clinical-style summary card in the reference dashboard.")
-        summary_rows = [
-            {"Metric": "Predicted Label", "Value": prediction.predicted_label},
-            {"Metric": "Confidence", "Value": f"{prediction.confidence * 100:.2f}%"},
-            {"Metric": "Model", "Value": prediction.model_display_name},
-            {"Metric": "Words", "Value": str(input_stats["words"])},
-            {"Metric": "Characters", "Value": str(input_stats["characters"])},
-        ]
-        st.dataframe(summary_rows, use_container_width=True, hide_index=True)
+    with analysis_tabs[2]:
+        start_panel("Preprocessing Preview", "Show raw input and model-facing text without crowding the main dashboard view.")
+        preview_cols = st.columns(2)
+        with preview_cols[0]:
+            st.text_area("Submitted text", value=st.session_state.input_text, height=190, disabled=True)
+        with preview_cols[1]:
+            st.text_area("Model-facing text", value=prediction.cleaned_text, height=190, disabled=True)
         end_panel()
 
-    with detail_cols[1]:
-        start_panel("Preprocessing Preview", "The dashboard keeps the text visible so the demo audience can connect raw input with model behavior.")
-        st.text_area("Submitted text", value=st.session_state.input_text, height=180, disabled=True)
-        st.text_area("Model-facing text", value=prediction.cleaned_text, height=180, disabled=True)
-        end_panel()
-
-    start_panel("Validation and Limitations", "This dashboard is intended for live coursework demonstration, not for healthcare deployment.")
-    st.markdown(
-        """
-        - The labels are subreddit-derived academic proxy labels, not medical diagnoses.
-        - `TF-IDF + Logistic Regression` is the recommended default because it is the strongest and most reliable saved live model.
-        - `TwitterRoBERTa + Random Forest` is available as an advanced model option when its saved classifier artifact is present.
-        - The committed benchmark metrics come from `data/processed/results_summary.csv`.
-        """
-    )
-    end_panel()
+    with st.expander("Validation and Limitations", expanded=False):
+        st.markdown(
+            """
+            - The labels are subreddit-derived academic proxy labels, not medical diagnoses.
+            - `TF-IDF + Logistic Regression` is the recommended default because it is the strongest and most reliable saved live model.
+            - `TwitterRoBERTa + Random Forest` is available as an advanced model option when its saved classifier artifact is present.
+            - The committed benchmark metrics come from `data/processed/results_summary.csv`.
+            - This dashboard is for live coursework demonstration, not healthcare deployment.
+            """
+        )

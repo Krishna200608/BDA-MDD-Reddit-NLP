@@ -13,64 +13,89 @@ from src.inference import label_theme
 GLOBAL_CSS = """
 <style>
     .stApp {
-        background: linear-gradient(180deg, #f6f8fc 0%, #eef3fb 100%);
-        color: #101828;
+        background:
+            radial-gradient(circle at top right, rgba(37, 99, 235, 0.08), transparent 30%),
+            linear-gradient(180deg, #f7f9fc 0%, #eef3f9 100%);
+        color: #0f172a;
     }
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #23242d 0%, #1f2028 100%);
-        border-right: 1px solid rgba(255,255,255,0.06);
+        background: linear-gradient(180deg, #21242e 0%, #171922 100%);
+        border-right: 1px solid rgba(255,255,255,0.05);
     }
     [data-testid="stSidebar"] * {
         color: #f4f6fb;
     }
+    [data-testid="stSidebar"] .stSelectbox label,
+    [data-testid="stSidebar"] .stTextArea label,
+    [data-testid="stSidebar"] .stMarkdown,
+    [data-testid="stSidebar"] .stCaption {
+        color: #eef2ff !important;
+    }
+    [data-testid="stSidebar"] .stSelectbox div[data-baseweb="select"] > div,
+    [data-testid="stSidebar"] .stTextArea textarea {
+        background: rgba(255, 255, 255, 0.06) !important;
+        color: #f8fafc !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+    [data-testid="stSidebar"] .stButton button {
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        font-weight: 700;
+    }
+    [data-testid="stSidebar"] .stButton button[kind="primary"] {
+        background: linear-gradient(135deg, #ff5a5f 0%, #ff3f50 100%);
+        color: white !important;
+        border: none;
+        box-shadow: 0 12px 24px rgba(255, 79, 100, 0.25);
+    }
     .block-container {
-        padding-top: 1.25rem;
-        padding-bottom: 3rem;
-        max-width: 1380px;
+        padding-top: 1.1rem;
+        padding-bottom: 2.6rem;
+        max-width: 1320px;
     }
     .hero-card {
-        background: rgba(255, 255, 255, 0.92);
+        background: rgba(255, 255, 255, 0.96);
         border-left: 6px solid #1473e6;
-        border-radius: 24px;
-        padding: 1.6rem 1.8rem;
-        box-shadow: 0 18px 40px rgba(20, 33, 61, 0.08);
-        margin-bottom: 1rem;
+        border-radius: 26px;
+        padding: 1.45rem 1.7rem;
+        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+        margin-bottom: 0.9rem;
     }
     .hero-title {
-        font-size: 2.2rem;
+        font-size: 2.05rem;
         font-weight: 800;
         color: #123d7a;
-        margin-bottom: 0.2rem;
+        margin-bottom: 0.15rem;
     }
     .hero-subtitle {
-        color: #667085;
-        font-size: 1rem;
-        margin-bottom: 0.75rem;
+        color: #475467;
+        font-size: 0.98rem;
+        margin-bottom: 0.85rem;
     }
     .badge-row {
         display: flex;
         gap: 0.6rem;
         flex-wrap: wrap;
-        margin-top: 0.35rem;
+        margin-top: 0.25rem;
     }
     .status-badge {
         display: inline-flex;
         align-items: center;
         gap: 0.35rem;
-        background: #eef6ff;
+        background: #f5f9ff;
         color: #2459c4;
-        border: 1px solid #d5e6ff;
+        border: 1px solid #d7e7ff;
         border-radius: 999px;
         padding: 0.35rem 0.8rem;
         font-size: 0.84rem;
         font-weight: 600;
     }
     .metric-card {
-        background: rgba(255, 255, 255, 0.95);
+        background: rgba(255, 255, 255, 0.96);
         border-radius: 22px;
-        padding: 1.25rem 1rem;
-        box-shadow: 0 16px 32px rgba(15, 23, 42, 0.06);
-        min-height: 145px;
+        padding: 1.05rem 1rem;
+        box-shadow: 0 14px 30px rgba(15, 23, 42, 0.06);
+        min-height: 132px;
         border: 1px solid rgba(148, 163, 184, 0.16);
     }
     .metric-label {
@@ -79,26 +104,30 @@ GLOBAL_CSS = """
         font-size: 0.77rem;
         color: #64748b;
         font-weight: 700;
-        margin-bottom: 0.7rem;
+        margin-bottom: 0.55rem;
     }
     .metric-value {
-        font-size: 2.2rem;
+        font-size: 1.85rem;
         font-weight: 800;
         color: #0f172a;
-        line-height: 1.1;
+        line-height: 1.12;
+    }
+    .metric-value.compact {
+        font-size: 1.2rem;
+        line-height: 1.28;
     }
     .metric-helper {
-        color: #6b7280;
-        font-size: 0.92rem;
+        color: #475467;
+        font-size: 0.9rem;
         margin-top: 0.45rem;
     }
     .decision-card {
         border-radius: 26px;
         padding: 1.8rem 1.5rem;
-        box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
+        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
         border: 2px solid;
         text-align: center;
-        min-height: 380px;
+        min-height: 345px;
         display: flex;
         justify-content: center;
         flex-direction: column;
@@ -118,11 +147,11 @@ GLOBAL_CSS = """
     }
     .decision-description {
         font-size: 1.03rem;
-        color: #475467;
+        color: #334155;
         margin-bottom: 1.2rem;
     }
     .decision-score {
-        font-size: 3.2rem;
+        font-size: 3.0rem;
         font-weight: 900;
         line-height: 1;
         margin-bottom: 0.8rem;
@@ -136,26 +165,26 @@ GLOBAL_CSS = """
     .panel-card {
         background: rgba(255, 255, 255, 0.96);
         border-radius: 24px;
-        padding: 1.15rem 1.15rem 0.9rem;
+        padding: 1.05rem 1.15rem 1rem;
         box-shadow: 0 16px 34px rgba(15, 23, 42, 0.06);
         border: 1px solid rgba(148, 163, 184, 0.16);
-        margin-bottom: 1rem;
+        margin-bottom: 0.95rem;
     }
     .panel-title {
-        font-size: 1.45rem;
+        font-size: 1.28rem;
         font-weight: 800;
         color: #101828;
         margin-bottom: 0.25rem;
     }
     .panel-subtitle {
-        color: #667085;
-        margin-bottom: 0.9rem;
+        color: #475467;
+        margin-bottom: 0.8rem;
     }
     .sidebar-brand {
-        margin-bottom: 1.4rem;
+        margin-bottom: 1.2rem;
     }
     .sidebar-title {
-        font-size: 2rem;
+        font-size: 1.85rem;
         font-weight: 800;
         line-height: 1.1;
         margin: 0.65rem 0 0.2rem;
@@ -175,6 +204,64 @@ GLOBAL_CSS = """
         padding: 0.95rem 1rem;
         color: #991b1b;
         font-weight: 600;
+    }
+    .summary-chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.7rem;
+        margin-top: 0.25rem;
+    }
+    .summary-chip {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 0.75rem 0.9rem;
+        min-width: 150px;
+    }
+    .summary-chip-label {
+        font-size: 0.74rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #64748b;
+        margin-bottom: 0.35rem;
+    }
+    .summary-chip-value {
+        font-size: 1.05rem;
+        font-weight: 750;
+        color: #0f172a;
+    }
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 0.5rem;
+    }
+    .stTabs [data-baseweb="tab"] {
+        background: #f8fafc;
+        border-radius: 999px;
+        border: 1px solid #dbe4f0;
+        padding: 0.4rem 0.9rem;
+        color: #334155;
+        font-weight: 700;
+    }
+    .stTabs [aria-selected="true"] {
+        background: #eff6ff !important;
+        color: #1d4ed8 !important;
+        border-color: #bfdbfe !important;
+    }
+    .stTextArea textarea {
+        color: #0f172a !important;
+        background: rgba(255,255,255,0.9) !important;
+    }
+    .stTextArea textarea:disabled {
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
+        opacity: 1 !important;
+    }
+    [data-testid="stDataFrame"] {
+        border-radius: 18px;
+        overflow: hidden;
+    }
+    .stMarkdown p, .stMarkdown li, .stCaption {
+        color: #334155;
     }
 </style>
 """
@@ -214,11 +301,12 @@ def render_hero(title: str, subtitle: str, badges: Iterable[str]) -> None:
 
 
 def render_metric_card(label: str, value: str, helper: str) -> None:
+    value_class = "metric-value compact" if len(str(value)) > 18 else "metric-value"
     st.markdown(
         f"""
         <div class="metric-card">
             <div class="metric-label">{escape(label)}</div>
-            <div class="metric-value">{escape(value)}</div>
+            <div class="{value_class}">{escape(value)}</div>
             <div class="metric-helper">{escape(helper)}</div>
         </div>
         """,
@@ -282,12 +370,26 @@ def probability_chart(probabilities: dict[str, float]):
         showlegend=False,
         margin=dict(l=10, r=20, t=10, b=10),
         paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(248,250,252,0.65)",
-        xaxis=dict(range=[0, 1], tickformat=".0%", title="Probability"),
-        yaxis=dict(title=""),
-        height=320,
+        plot_bgcolor="#ffffff",
+        font=dict(color="#334155", size=13),
+        xaxis=dict(range=[0, 1], tickformat=".0%", title="Probability", gridcolor="#e5edf7", zeroline=False),
+        yaxis=dict(title="", tickfont=dict(color="#475467")),
+        height=260,
     )
     return fig
+
+
+def render_summary_chips(items: list[tuple[str, str]]) -> None:
+    chip_html = "".join(
+        f"""
+        <div class="summary-chip">
+            <div class="summary-chip-label">{escape(label)}</div>
+            <div class="summary-chip-value">{escape(value)}</div>
+        </div>
+        """
+        for label, value in items
+    )
+    st.markdown(f'<div class="summary-chip-row">{chip_html}</div>', unsafe_allow_html=True)
 
 
 def benchmark_table_row(benchmark_row: dict | None) -> pd.DataFrame:

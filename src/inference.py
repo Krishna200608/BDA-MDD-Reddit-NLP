@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import json
-import math
 import re
+import warnings
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -10,6 +10,9 @@ from typing import Any
 
 import joblib
 import numpy as np
+import nltk
+from nltk.corpus import stopwords
+from sklearn.exceptions import InconsistentVersionWarning
 
 try:
     import torch
@@ -18,6 +21,9 @@ except Exception:  # pragma: no cover - optional at import time
     torch = None
     AutoModel = None
     AutoTokenizer = None
+
+
+warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -29,6 +35,8 @@ CLASS_LABELS_PATH = MODELS_DIR / "class_labels.json"
 DEFAULT_LABEL_ORDER = ["Control", "Moderate MDD", "Severe Ideation"]
 USER_PATTERN = re.compile(r"@\w+")
 URL_PATTERN = re.compile(r"http\S+|www\.\S+")
+NON_ALPHA_PATTERN = re.compile(r"[^a-z\s]")
+MULTISPACE_PATTERN = re.compile(r"\s+")
 
 
 @dataclass
@@ -160,6 +168,25 @@ def normalize_probabilities(probabilities: np.ndarray, label_order: list[str]) -
     return {label: float(score) for label, score in zip(label_order, clipped)}
 
 
+@lru_cache(maxsize=1)
+def get_stop_words() -> set[str]:
+    try:
+        return set(stopwords.words("english"))
+    except LookupError:
+        nltk.download("stopwords", quiet=True)
+        return set(stopwords.words("english"))
+
+
+def preprocess_for_sparse(text: str) -> str:
+    normalized = str(text or "").lower()
+    normalized = URL_PATTERN.sub("", normalized)
+    normalized = normalized.replace("\n", " ")
+    normalized = NON_ALPHA_PATTERN.sub("", normalized)
+    normalized = MULTISPACE_PATTERN.sub(" ", normalized).strip()
+    filtered_tokens = [token for token in normalized.split() if token not in get_stop_words()]
+    return " ".join(filtered_tokens)
+
+
 def get_results_summary_rows() -> list[dict[str, Any]]:
     if not RESULTS_SUMMARY_PATH.exists():
         return []
@@ -227,12 +254,13 @@ def get_roberta_embedding(text: str, encoder_name: str) -> np.ndarray:
 def predict_with_sparse_pipeline(model_info: dict[str, Any], text: str, label_order: list[str]) -> PredictionResult:
     artifact = load_saved_artifact(model_info["resolved_artifact_path"])
     model_display_name = str(model_info["display_name"])
-    predicted_index = int(artifact.predict([text])[0])
+    model_input_text = preprocess_for_sparse(text)
+    predicted_index = int(artifact.predict([model_input_text])[0])
 
     if hasattr(artifact, "predict_proba"):
-        probability_vector = artifact.predict_proba([text])[0]
+        probability_vector = artifact.predict_proba([model_input_text])[0]
     else:
-        decision_vector = artifact.decision_function([text])[0]
+        decision_vector = artifact.decision_function([model_input_text])[0]
         if np.ndim(decision_vector) == 0:
             decision_vector = np.asarray([0.0, float(decision_vector)])
         probability_vector = softmax(np.asarray(decision_vector, dtype=float))
@@ -247,9 +275,12 @@ def predict_with_sparse_pipeline(model_info: dict[str, Any], text: str, label_or
         predicted_label=predicted_label,
         confidence=confidence,
         probabilities=probabilities,
-        cleaned_text=text,
-        runtime_notes=["Sparse inference path loaded from saved sklearn pipeline."],
-        explanation_rows=explain_sparse_prediction(artifact, text, predicted_index, label_order),
+        cleaned_text=model_input_text,
+        runtime_notes=[
+            "Sparse inference path loaded from saved sklearn pipeline.",
+            "Input text was normalized with the same regex + stopword cleaning strategy used to build selftext_cleaned.",
+        ],
+        explanation_rows=explain_sparse_prediction(artifact, model_input_text, predicted_index, label_order),
         benchmark_row=lookup_benchmark_row(model_display_name),
     )
 

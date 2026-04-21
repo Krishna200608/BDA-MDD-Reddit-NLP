@@ -1,6 +1,6 @@
 # Project Context — BDA: Reddit MDD NLP Corpus
 
-> **Living Document** — Updated throughout the project lifecycle.  
+> **Living Agent Handoff Document**  
 > Last Updated: 2026-04-21
 
 ---
@@ -13,188 +13,395 @@
 | **Institution** | Indian Institute of Information Technology, Allahabad (IIIT-A) |
 | **Professor** | Prof. Sonali Agarwal |
 | **Task ID** | HDA-4 |
-| **Title** | Natural Language Processing of Social Media for MDD Symptom Identification (Reddit MDD Corpus) |
-| **Repo** | `Krishna200608/BDA-MDD-Reddit-NLP` |
+| **Repository** | `Krishna200608/BDA-MDD-Reddit-NLP` |
+| **Project Title** | Natural Language Processing of Social Media for MDD Symptom Identification |
+| **Primary Goal** | Build a coursework-quality Reddit NLP pipeline for 3-class severity classification and interpretable language analysis |
 
-## 2. Team
-
-| Name | Roll Number | Role |
-|---|---|---|
-| Krishna Sikheriya | IIT2023139 | — |
-| Priyam Jyoti Chakrabarty | IIT2023147 | — |
-| Tavish Chawla | IIT2023150 | — |
-
-## 3. Objective
-
-- Compile a dataset of self-reported **Major Depressive Disorder (MDD)** posts from Reddit for NLP-based analysis.
-- **ML Goal**: Classify posts into 3 severity tiers (Control, Moderate MDD, Severe Ideation); detect symptom and emotional language patterns.
-
-## 4. Target Subreddits
-
-| Subreddit | Purpose | Label |
-|---|---|---|
-| `r/depression` | MDD-related posts | Moderate MDD |
-| `r/SuicideWatch` | Severe risk posts | Severe Ideation |
-| `r/CasualConversation` | Neutral/control posts | Control |
-
-## 5. Assignments & Deliverables
-
-### Assignment 1 — Data Extraction
-| Deliverable | Format | Status |
-|---|---|---|
-| Secondary dataset (post IDs, dates, cleaned text, labels) | `.csv` | ✅ Complete |
-| Python Script for Reddit scraping & cleaning | `.py` | ✅ Complete |
-| Documentation of workflow | `.md` | ✅ Complete |
-
-### Assignment 2 — Classification & Pipeline (Current) ⬅️
-| Deliverable | Format | Status |
-|---|---|---|
-| Python Notebook for text classification models | `.ipynb` | ✅ Complete |
-| EDA & Language Pattern Detection (symptom keywords, word clouds, sentiment, bigrams, SHAP) | `.ipynb` | ✅ Complete |
-| Documentation of methods and results | `.md` | ✅ Complete |
-| Automated pipeline for quarterly updates | `.py` | ✅ Complete |
-| Saved deployment-ready model artifacts for live inference | `.joblib` / `.json` | 🚧 In Progress |
-| Streamlit dashboard for demo inference | `.py` | 🚧 In Progress |
-
-## 6. Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Language | Python 3.12+ |
-| Environment | `.venv` locally + Google Colab (T4 GPU recommended for official notebook reproduction) |
-| API | PullPush / Pushshift API (No authentication required) |
-| Requests | `requests` (Python HTTP library) |
-| NLP | NLTK, regex, VADER Sentiment, wordcloud |
-| Embeddings | TwitterRoBERTa (`cardiffnlp/twitter-roberta-base`) |
-| ML | scikit-learn (Assignment 2) |
-| Deployment / UI | joblib, Streamlit, Plotly |
-| Data | pandas, numpy |
-| Version Control | Git + GitHub |
-
-## 7. Data Schema (Target CSV)
-
-| Column | Type | Description |
-|---|---|---|
-| `post_id` | `str` | Unique Reddit post ID |
-| `subreddit` | `str` | Source subreddit name |
-| `timestamp` | `datetime` | UTC time of post creation |
-| `title` | `str` | Post title |
-| `selftext` | `str` | Raw Reddit post body |
-| `score` | `int` | Post upvote score |
-| `num_comments` | `int` | Number of comments |
-| `author` | `str` | Reddit username captured in the scrape |
-| `label` | `str` | `Control`, `Moderate MDD`, or `Severe Ideation` |
-| `selftext_cleaned` | `str` | Lowercased, regex-cleaned, stopwords removed |
-| `word_count` | `int` | Word count of cleaned text |
-| `sentiment_score` | `float` | VADER compound sentiment score |
-| `text_hash` | `str` | Deterministic hash of `title+selftext` for QA and leakage-aware analysis |
-
-## 8. Project Directory Structure (Current)
-
-```
-BDA-MDD-Reddit-NLP/
-├── data/
-│   ├── raw/                    # Raw scraped data (gitignored if large)
-│   └── processed/              # Cleaned, labeled CSVs + QA/evaluation artifacts
-│       ├── reddit_mdd_cleaned.csv
-│       ├── dataset_summary.csv
-│       ├── results_summary.csv
-│       ├── error_analysis_holdout.csv
-│       └── top_tokens_by_class.csv
-├── models/
-│   ├── tfidf_logreg_pipeline.joblib
-│   ├── tfidf_linearsvc_pipeline.joblib
-│   ├── roberta_rf_classifier.joblib
-│   ├── model_metadata.json
-│   └── class_labels.json
-├── notebooks/
-│   ├── Assignment_1_PRAW_Extraction.ipynb      # Legacy notebook from the original PRAW plan
-│   └── 02_text_classification_models.ipynb     # TF-IDF, TwitterRoBERTa, SHAP, artifact export
-├── src/
-│   ├── scraper.py              # PullPush API scraper using requests
-│   ├── pipeline.py             # Main Extraction & Cleaning pipeline
-│   ├── inference.py            # Shared loading/prediction logic for live inference
-│   ├── dashboard_utils.py      # Streamlit dashboard styling and helper utilities
-│   └── quarterly_updater.py    # Local automation fallback using schedule
-├── docs/
-│   ├── assignments/
-│   │   └── Our_Project_Task.md # Original grading criteria
-│   ├── assets/
-│   │   ├── Reddit_Proxy_API.pdf
-│   │   └── reddit_api_project_brief.md
-│   ├── methods_and_results.md  # Final Evaluation Document
-│   ├── workflow.md             # Workflow documentation (deliverable)
-│   └── team_work_division.md   # Group work allocation cheat sheet
-├── .github/
-│   └── workflows/
-│       └── quarterly_update.yml # CI/CD: auto-refresh dataset every quarter
-├── .env.example
-├── .gitignore
-├── app.py                      # Streamlit live inference dashboard
-├── Context.md                  # This file
-├── README.md                   # Professional repo README
-└── requirements.txt            # pip dependencies
-```
-
-## 9. API Credentials Status
-
-| Item | Status |
-|---|---|
-| PullPush API keys | **Not Required** |
-| Reddit API keys | Not required for the current committed pipeline; only a historical backup idea from the early project stage |
-
-## 10. Key Decisions Log
-
-| Date | Decision | Rationale |
-|---|---|---|
-| 2026-04-02 | Project initiated | Assignment 1 released by Prof. Sonali Agarwal |
-| 2026-04-02 | Reddit API access requested | Needed for PRAW-based data extraction |
-| 2026-04-06 | Transformer hardware optimization | Dynamic GPU (Colab) scaling implemented to speed up embedding generation |
-| 2026-04-06 | Colab Github Auth Secret Sync | Integrated dynamic repo sync to fix absolute filepath breakages in cloud rendering |
-| 2026-04-06 | Quarterly automation → GitHub Actions | Replaced local `schedule` daemon with CI/CD cron workflow for zero-maintenance refresh |
-| 2026-04-07 | EDA & Language Pattern Detection section | Added 6 analyses: DSM-5 symptom keyword frequency, word clouds, VADER sentiment distribution, post length distribution, top bigrams, SHAP explainability |
-| 2026-04-10 | Tertiary Severity Mapping | Upgraded labeling from binary to Control vs. Moderate vs. Severe |
-| 2026-04-10 | Gated Repo Fix (TwitterRoBERTa) | Switched from mental-roberta to cardiffnlp/twitter-roberta-base to prevent 401 Gated Error on Colab |
-| 2026-04-10 | PyTorch TQDM Acceleration | Rewrote embedding generation from apply() to batched iteration |
-| 2026-04-18 | Dataset QA Hardening | Added duplicate removal, `text_hash`, and `dataset_summary.csv` generation to reduce leakage risk |
-| 2026-04-18 | Evaluation Upgrade | Added repeated CV, LinearSVC baseline, permutation test, learning curve, and holdout error analysis |
-| 2026-04-18 | Final Colab T4 Evaluation Run | Generated `results_summary.csv`, `error_analysis_holdout.csv`, and `top_tokens_by_class.csv` from the completed notebook run |
-| 2026-04-21 | Deployment Artifact Export | Added notebook support to save `.joblib` inference artifacts plus model metadata for live demo usage |
-| 2026-04-21 | Streamlit Dashboard Track | Added a Streamlit inference app inspired by the NeuroFetal-AI card-and-sidebar design pattern |
-
-## 11. Latest Snapshot
-
-| Item | Value |
-|---|---|
-| **Rows before QA** | `9,800` |
-| **Rows after QA / modeling snapshot** | `9,607` |
-| **Duplicate `post_id` rows removed** | `145` |
-| **Exact duplicate `title+selftext` rows removed** | `48` |
-| **Date range** | `2025-03-05T06:40:41` → `2025-05-19T18:11:58` |
-| **Labels** | `Control` 4,903 · `Moderate MDD` 2,408 · `Severe Ideation` 2,296 |
-| **Best repeated-CV model** | `TF-IDF + Logistic Regression` — accuracy `0.7762 ± 0.0100`, macro F1 `0.7251 ± 0.0109` |
-| **Best holdout model** | `TF-IDF + Logistic Regression` — accuracy `0.7841`, macro F1 `0.7355` |
-| **Permutation test** | macro F1 `0.7221`, `p = 0.032258` |
-| **Generated artifacts** | `dataset_summary.csv`, `results_summary.csv`, `error_analysis_holdout.csv`, `top_tokens_by_class.csv` |
-| **Planned deployment artifacts after Colab rerun** | `tfidf_logreg_pipeline.joblib`, `tfidf_linearsvc_pipeline.joblib`, `roberta_rf_classifier.joblib`, `model_metadata.json`, `class_labels.json` |
-| **Live demo entry point** | `streamlit run app.py` |
-
-## 12. Risks & Mitigations
-
-| Risk | Impact | Mitigation |
-|---|---|---|
-| PullPush / proxy availability changes | Can interrupt future refreshes | Keep the scraper resilient with retries and preserve committed dataset snapshots |
-| Proxy rate limiting or unstable responses | Slower data collection / partial refreshes | Retry handling, polite delays, and rerunning the pipeline when needed |
-| Subreddit posts removed/deleted | Incomplete dataset | Collect surplus data, document exclusions |
-| Three-class label skew | Can bias per-class performance, especially for Moderate vs Severe confusion | Stratified splitting, macro-F1 reporting, and per-class precision/recall |
-
-## 13. References
-
-- [PullPush API Brief](docs/assets/reddit_api_project_brief.md)
-- [Reddit API Terms](https://www.reddit.com/wiki/api/)
-- [VADER Sentiment Analysis](https://github.com/cjhutto/vaderSentiment)
-- [TwitterRoBERTa](https://huggingface.co/cardiffnlp/twitter-roberta-base)
+This repository is no longer just a data-collection assignment. It is now an end-to-end coursework project with:
+- Reddit scraping through PullPush
+- QA-safe dataset construction
+- classical and transformer-based model comparison
+- exported inference-ready model artifacts
+- a local-first Streamlit dashboard for live demo inference
 
 ---
 
-> **Note**: This is the living project context document. For the latest committed evaluation metrics, use `data/processed/results_summary.csv` as the metrics source of truth.
+## 2. Team
+
+| Name | Roll Number | Notes |
+|---|---|---|
+| Krishna Sikheriya | IIT2023139 | Main repo owner |
+| Priyam Jyoti Chakrabarty | IIT2023147 | Team member |
+| Tavish Chawla | IIT2023150 | Team member |
+
+---
+
+## 3. Problem Framing
+
+### Current supervised task
+Classify Reddit posts into:
+
+| Label | Meaning | Source Subreddit |
+|---|---|---|
+| `Control` | Neutral / casual conversation baseline | `r/CasualConversation` |
+| `Moderate MDD` | Depression-related distress language | `r/depression` |
+| `Severe Ideation` | Stronger suicide / severe-risk language | `r/SuicideWatch` |
+
+### Important framing constraint
+These are **proxy labels derived from subreddit origin**, not medical diagnoses.
+
+The project is intended for:
+- coursework
+- NLP experimentation
+- interpretable model comparison
+- live academic demo
+
+It is **not** intended for:
+- clinical screening
+- healthcare deployment
+- diagnosis
+
+---
+
+## 4. Current Repo State
+
+### Current processed dataset snapshot
+
+| Item | Value |
+|---|---|
+| Rows before QA | `9,800` |
+| Rows after QA / modeling snapshot | `9,607` |
+| Duplicate `post_id` rows removed | `145` |
+| Exact duplicate `title+selftext` rows removed | `48` |
+| Date range | `2025-03-05T06:40:41` → `2025-05-19T18:11:58` |
+| Label distribution | `Control` 4,903 · `Moderate MDD` 2,408 · `Severe Ideation` 2,296 |
+
+### Best committed evaluation snapshot
+
+| Item | Value |
+|---|---|
+| Best repeated-CV model | `TF-IDF + Logistic Regression` |
+| Repeated-CV accuracy | `0.7762 ± 0.0100` |
+| Repeated-CV macro F1 | `0.7251 ± 0.0109` |
+| Best holdout model | `TF-IDF + Logistic Regression` |
+| Holdout accuracy | `0.7841` |
+| Holdout macro F1 | `0.7355` |
+| Permutation test | macro F1 `0.7221`, `p = 0.032258` |
+
+### Source of truth files
+- Metrics source of truth: `data/processed/results_summary.csv`
+- Dataset QA source of truth: `data/processed/dataset_summary.csv`
+- Saved deployment registry: `models/model_metadata.json`
+- Label-order source of truth: `models/class_labels.json`
+
+---
+
+## 5. Main Deliverables Now Present
+
+### Assignment 1
+| Deliverable | Status |
+|---|---|
+| Scraping script | ✅ Complete |
+| Cleaned CSV dataset | ✅ Complete |
+| Workflow documentation | ✅ Complete |
+
+### Assignment 2
+| Deliverable | Status |
+|---|---|
+| Strengthened classification notebook | ✅ Complete |
+| EDA and language-pattern analysis | ✅ Complete |
+| Documentation of methods and results | ✅ Complete |
+| Quarterly refresh automation | ✅ Complete |
+| Saved `.joblib` deployment artifacts | ✅ Complete |
+| Streamlit live inference dashboard | ✅ Complete |
+
+---
+
+## 6. Architecture Overview
+
+### Data pipeline
+1. `src/scraper.py`
+   - PullPush scraper using `requests`
+   - pagination / retry behavior
+   - subreddit-based data collection
+
+2. `src/pipeline.py`
+   - combines subreddit pulls
+   - enforces required columns
+   - deduplicates by `post_id`
+   - deduplicates exact `title+selftext`
+   - creates deterministic `text_hash`
+   - cleans `selftext` into `selftext_cleaned`
+   - computes `word_count`
+   - computes VADER `sentiment_score`
+   - exports raw + processed CSVs
+   - exports `dataset_summary.csv`
+
+### Modeling pipeline
+Notebook: `notebooks/02_text_classification_models.ipynb`
+
+Tracks:
+- Sparse Track A:
+  - TF-IDF + Logistic Regression
+  - TF-IDF + LinearSVC
+- Dense Track B:
+  - TwitterRoBERTa embeddings + Random Forest
+
+Evaluation:
+- fixed 80/20 stratified holdout
+- 5-fold, 3-repeat repeated CV
+- permutation test on main sparse baseline
+- learning curve
+- SHAP / token-level interpretation
+- holdout error analysis
+
+### Deployment / live inference pipeline
+- `models/` stores exported deployment artifacts
+- `src/inference.py` loads artifacts and runs prediction
+- `app.py` serves the Streamlit dashboard
+- `src/dashboard_utils.py` contains UI rendering/styling helpers
+
+---
+
+## 7. Files and What They Mean
+
+### Core runtime files
+
+| File | Role |
+|---|---|
+| `src/scraper.py` | PullPush Reddit collection |
+| `src/pipeline.py` | QA, cleaning, CSV generation |
+| `notebooks/02_text_classification_models.ipynb` | canonical evaluation + artifact export notebook |
+| `src/inference.py` | shared inference logic for saved models |
+| `src/dashboard_utils.py` | Streamlit layout/styling helpers |
+| `app.py` | Streamlit entry point |
+
+### Data / evaluation artifacts
+
+| File | Role |
+|---|---|
+| `data/processed/reddit_mdd_cleaned.csv` | final processed dataset |
+| `data/processed/dataset_summary.csv` | dataset QA summary |
+| `data/processed/results_summary.csv` | committed evaluation metrics |
+| `data/processed/error_analysis_holdout.csv` | saved misclassification analysis |
+| `data/processed/top_tokens_by_class.csv` | token-level class interpretation |
+
+### Deployment artifacts
+
+| File | Role |
+|---|---|
+| `models/tfidf_logreg_pipeline.joblib` | default live inference model |
+| `models/tfidf_linearsvc_pipeline.joblib` | secondary sparse model |
+| `models/roberta_rf_classifier.joblib` | saved Random Forest head for RoBERTa runtime inference |
+| `models/model_metadata.json` | dashboard metadata + benchmark registry |
+| `models/class_labels.json` | label order and numeric mapping |
+
+---
+
+## 8. Current Saved-Model Contract
+
+### Default model
+Default live model is:
+- `tfidf_logreg`
+- display name: `TF-IDF + Logistic Regression`
+
+This is encoded in:
+- `models/model_metadata.json`
+
+### Important saved-model behavior
+
+#### Sparse models
+Saved as complete sklearn pipelines:
+- vectorizer + classifier together
+- loaded directly from `.joblib`
+
+Important implementation note:
+- these sparse models were trained on `selftext_cleaned`
+- `src/inference.py` now preprocesses live text with the same regex + stopword-cleaning logic used in `src/pipeline.py`
+- this alignment is important; otherwise live inference drifts from training behavior
+
+#### RoBERTa model
+Saved artifact is only:
+- `roberta_rf_classifier.joblib`
+
+The transformer encoder is **not** stored in the repo as weights.
+At runtime:
+- load `cardiffnlp/twitter-roberta-base`
+- apply model-card preprocessing:
+  - usernames → `@user`
+  - links → `http`
+- compute embeddings
+- pass embeddings into saved RF classifier
+
+This was chosen to keep the repo lighter and the export format practical.
+
+---
+
+## 9. Dashboard State
+
+### Current dashboard purpose
+The Streamlit dashboard is for:
+- live classroom demo
+- showing single-post inference
+- switching between saved models
+- presenting prediction results cleanly
+
+### Current UX scope
+V1 supports:
+- single text input
+- curated example texts
+- model selector
+- predict button
+- clear result button
+
+V1 does **not** support:
+- batch CSV upload
+- hosted cloud deployment workflow
+- clinical usage
+
+### Current visual direction
+Inspired by the user’s NeuroFetal-AI project:
+- dark sidebar
+- bright main canvas
+- hero/status banner
+- metric cards
+- central decision card
+- compact analysis sections
+
+### Important recent UI decisions
+- dashboard was simplified to reduce clutter
+- detailed sections were moved into tabs
+- limitations were collapsed into an expander
+- text contrast was improved for light backgrounds
+- disabled text areas were made readable
+
+---
+
+## 10. Commands Another Agent Should Know
+
+### Local environment setup
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### Refresh dataset locally
+```bash
+python src/pipeline.py
+```
+
+### Run dashboard locally
+```bash
+streamlit run app.py
+```
+
+### Notebook reproduction path
+Preferred:
+- Google Colab
+- T4 GPU
+- run `notebooks/02_text_classification_models.ipynb`
+- export fresh model artifacts
+- push from Colab
+- pull locally
+
+---
+
+## 11. Dependency / Runtime Constraints
+
+### Important compatibility pin
+`requirements.txt` pins:
+- `scikit-learn==1.6.1`
+
+Reason:
+- the saved `.joblib` artifacts were exported with `scikit-learn 1.6.1`
+- loading them under `1.8.0` produced `InconsistentVersionWarning`
+
+The pin exists specifically to keep local live inference stable.
+
+### Transformer runtime note
+The first RoBERTa inference may take noticeably longer because:
+- Hugging Face model + tokenizer load at runtime
+- embeddings are computed live
+
+This is expected behavior, not a bug.
+
+---
+
+## 12. Documentation Map
+
+| File | What to read it for |
+|---|---|
+| `README.md` | polished repo overview and usage |
+| `docs/workflow.md` | pipeline and methodology narrative |
+| `docs/methods_and_results.md` | evaluation interpretation |
+| `docs/team_work_division.md` | viva / contribution notes |
+| `Context.md` | this full handoff and current-state guide |
+
+---
+
+## 13. Key Decision Log
+
+| Date | Decision | Why it matters |
+|---|---|---|
+| 2026-04-02 | Project initiated | Assignment start |
+| 2026-04-06 | Quarterly refresh moved to GitHub Actions | removed need for always-on local scheduler |
+| 2026-04-07 | Added EDA and language-pattern detection | strengthened Assignment 2 beyond pure classification |
+| 2026-04-10 | Switched to 3-class severity mapping | project evolved beyond binary framing |
+| 2026-04-10 | Switched to `cardiffnlp/twitter-roberta-base` | avoided gated-repo issues and better matched social-media language |
+| 2026-04-18 | Added QA hardening | duplicate removal + `text_hash` + dataset summary |
+| 2026-04-18 | Upgraded evaluation protocol | repeated CV, LinearSVC, permutation test, learning curve, error analysis |
+| 2026-04-18 | Final Colab T4 metrics committed | produced final CSV artifacts |
+| 2026-04-21 | Saved deployment model artifacts | enabled live dashboard inference |
+| 2026-04-21 | Built Streamlit demo app | local-first live inference experience |
+| 2026-04-21 | Kept executed notebook committed | coursework evidence retained in repo |
+| 2026-04-21 | Fixed live sparse preprocessing alignment | dashboard sparse inference now matches training-time cleaning |
+| 2026-04-21 | Simplified dashboard layout | reduced clutter and improved visibility |
+
+---
+
+## 14. Known Risks / Caveats
+
+| Risk | Meaning | Current mitigation |
+|---|---|---|
+| PullPush instability | future refreshes may fail or slow down | retries + keep committed snapshots |
+| Proxy labels are noisy | labels are not diagnoses | explicit academic-only framing everywhere |
+| Moderate vs Severe overlap | hardest classification boundary | report macro F1 and per-class metrics, not just accuracy |
+| RoBERTa runtime cost | first inference is slower | keep logistic regression as default live model |
+| Model/version mismatch | `.joblib` may warn or fail under different sklearn versions | requirements pin to `1.6.1` |
+
+---
+
+## 15. Working Tree Hygiene
+
+Before making further changes, another agent should always check:
+- `git status`
+- whether the executed notebook has changed again after a new Colab run
+- whether saved model artifacts in `models/` still match the current notebook export contract
+
+This matters because this repo mixes:
+- committed evaluation artifacts
+- committed deployment artifacts
+- notebook-driven updates that may be regenerated in Colab
+
+---
+
+## 16. What Another AI Agent Should Do First
+
+If another agent enters this repo, recommended first steps are:
+
+1. Read `git status` to separate committed repo truth from local uncommitted work.
+2. Read `models/model_metadata.json` to understand the live inference contract.
+3. Read `src/inference.py` and `app.py` together to understand current dashboard behavior.
+4. Read `data/processed/results_summary.csv` for the final metrics source of truth.
+5. Only then modify docs / dashboard / notebook as needed.
+
+---
+
+## 17. Single-Sentence Summary
+
+This project is a 3-class Reddit mental-health NLP coursework pipeline with QA-safe data preparation, evaluated sparse and dense models, exported `.joblib` inference artifacts, and a polished local-first Streamlit dashboard for live demo prediction.
+
+---
+
+> **Final note for agents:** Treat `results_summary.csv` as the metrics source of truth, `model_metadata.json` as the deployment source of truth, and `git status` as the source of truth for whether the latest dashboard/context refinements are already committed.

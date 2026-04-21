@@ -326,6 +326,8 @@ source .venv/bin/activate      # macOS / Linux
 pip install -r requirements.txt
 ```
 
+> The saved `.joblib` inference artifacts were exported with `scikit-learn==1.6.1`, so the requirements file pins that version for local dashboard compatibility.
+
 ---
 
 ## Reproducibility Notes

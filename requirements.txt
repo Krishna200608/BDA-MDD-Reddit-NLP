@@ -7,7 +7,7 @@ seaborn
 nltk
 vaderSentiment
 tqdm
-scikit-learn
+scikit-learn==1.6.1
 joblib
 praw
 python-dotenv
