@@ -15,6 +15,7 @@ from src.dashboard_utils import (
     start_panel,
 )
 from src.inference import (
+    detect_self_report,
     get_available_models,
     get_dashboard_summary,
     get_default_model_key,
@@ -138,6 +139,7 @@ render_hero(
 )
 
 input_stats = summarize_input_text(st.session_state.input_text)
+self_report_detected = detect_self_report(st.session_state.input_text)
 
 # Ensure proper metrics alignment
 st.divider()
@@ -155,6 +157,11 @@ with top_cols[3]:
         "Ready" if selected_model_info.get("is_available") else "Missing",
         "Saved `.joblib` artifact status",
     )
+
+if self_report_detected:
+    st.warning("Self-report detected: Yes")
+else:
+    st.info("Self-report detected: No")
 
 prediction = None
 

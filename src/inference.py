@@ -37,6 +37,44 @@ USER_PATTERN = re.compile(r"@\w+")
 URL_PATTERN = re.compile(r"http\S+|www\.\S+")
 NON_ALPHA_PATTERN = re.compile(r"[^a-z\s]")
 MULTISPACE_PATTERN = re.compile(r"\s+")
+TOKEN_PATTERN = re.compile(r"[a-z']+")
+FIRST_PERSON_PATTERN = re.compile(r"\b(i|i'm|im|ive|i've|me|my|myself)\b")
+SELF_REPORT_KEYWORDS = {
+    "depressed",
+    "depression",
+    "hopeless",
+    "worthless",
+    "empty",
+    "numb",
+    "suicidal",
+    "suicide",
+    "anxiety",
+    "panic",
+    "insomnia",
+    "fatigue",
+    "tired",
+    "guilt",
+    "sad",
+    "lonely",
+    "crying",
+    "helpless",
+    "overwhelmed",
+    "selfharm",
+}
+SELF_REPORT_PHRASES = (
+    "want to die",
+    "kill myself",
+    "end my life",
+    "feel hopeless",
+    "feel worthless",
+    "feel empty",
+    "feel numb",
+    "cant go on",
+    "can't go on",
+    "i was diagnosed",
+    "my depression",
+    "my anxiety",
+)
 
 
 @dataclass
@@ -380,3 +418,15 @@ def get_dashboard_summary() -> dict[str, Any]:
         "subtitle": dashboard.get("subtitle", "Three-Class Mental Health Language Analysis"),
         "system_badges": dashboard.get("system_badges", ["System Ready", "Live Inference"]),
     }
+
+
+def detect_self_report(text: str) -> bool:
+    normalized = MULTISPACE_PATTERN.sub(" ", str(text or "").lower()).strip()
+    if not normalized:
+        return False
+    if not FIRST_PERSON_PATTERN.search(normalized):
+        return False
+    if any(phrase in normalized for phrase in SELF_REPORT_PHRASES):
+        return True
+    tokens = set(TOKEN_PATTERN.findall(normalized))
+    return len(tokens.intersection(SELF_REPORT_KEYWORDS)) > 0
