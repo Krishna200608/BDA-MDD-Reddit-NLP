@@ -225,6 +225,15 @@ def get_stop_words() -> set[str]:
         nltk.download("stopwords", quiet=True)
         return set(stopwords.words("english"))
 
+def compute_linguistic_complexity(text: str) -> float:
+
+    tokens = TOKEN_PATTERN.findall(text.lower())
+    if not tokens:
+        return 0.0
+    unique_ratio = len(set(tokens)) / len(tokens)
+    return float(unique_ratio)
+
+
 
 def preprocess_for_sparse(text: str) -> str:
     normalized = str(text or "").lower()
