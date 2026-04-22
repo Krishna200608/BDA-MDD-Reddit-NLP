@@ -1,7 +1,7 @@
 # Project Context — BDA: Reddit MDD NLP Corpus
 
 > **Living Agent Handoff Document**  
-> Last Updated: 2026-04-21
+> Last Updated: 2026-04-22
 
 ---
 
@@ -373,6 +373,7 @@ This is expected behavior, not a bug.
 | 2026-04-21 | Kept executed notebook committed | coursework evidence retained in repo |
 | 2026-04-21 | Fixed live sparse preprocessing alignment | dashboard sparse inference now matches training-time cleaning |
 | 2026-04-21 | Upgraded dashboard appearance | implemented responsive Plotly charts and a dynamic dark mode toggle |
+| 2026-04-22 | Implemented self-report filtering | added first-person pronoun + clinical keyword matching heuristics in `app.py` and `src/inference.py` |
 
 ---
 
