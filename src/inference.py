@@ -233,6 +233,15 @@ def compute_linguistic_complexity(text: str) -> float:
     unique_ratio = len(set(tokens)) / len(tokens)
     return float(unique_ratio)
 
+def smooth_embedding_vector(embedding: np.ndarray) -> np.ndarray:
+
+    if embedding.ndim == 1:
+        return embedding
+
+    kernel = np.ones(3) / 3
+    smoothed = np.convolve(embedding.flatten(), kernel, mode="same")
+    return smoothed.reshape(embedding.shape)
+
 
 
 def preprocess_for_sparse(text: str) -> str:
