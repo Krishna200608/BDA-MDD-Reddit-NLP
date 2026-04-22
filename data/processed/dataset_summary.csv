@@ -1,0 +1,17 @@
+section,metric,value
+rows,rows_before_qa,9800
+rows,rows_after_qa,9607
+rows,rows_after_length_filter,9607
+rows,dropped_short_posts,0
+duplicates,duplicate_post_id_rows_removed,145
+duplicates,duplicate_title_selftext_rows_removed,48
+missing,missing_selftext,0
+missing,missing_selftext_cleaned,0
+length,word_count_min,5
+length,word_count_median,46.0
+length,word_count_mean,68.19
+dates,timestamp_min,2025-03-05T06:40:41
+dates,timestamp_max,2025-05-19T18:11:58
+labels,label_count_Control,4903
+labels,label_count_Moderate MDD,2408
+labels,label_count_Severe Ideation,2296

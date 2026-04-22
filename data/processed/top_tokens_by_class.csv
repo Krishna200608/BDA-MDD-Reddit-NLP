@@ -1,0 +1,31 @@
+class_label,rank,token,coefficient
+Control,1,curious,1.907422
+Control,2,lol,1.701822
+Control,3,new,1.675298
+Control,4,whats,1.512482
+Control,5,something,1.462838
+Control,6,coffee,1.456744
+Control,7,share,1.449972
+Control,8,chat,1.432062
+Control,9,little,1.409911
+Control,10,hear,1.407654
+Moderate MDD,1,depression,5.836423
+Moderate MDD,2,depressed,4.096447
+Moderate MDD,3,feel,2.181749
+Moderate MDD,4,advice,1.961704
+Moderate MDD,5,hate,1.936261
+Moderate MDD,6,depressive,1.829088
+Moderate MDD,7,sad,1.696938
+Moderate MDD,8,therapy,1.622306
+Moderate MDD,9,help,1.610741
+Moderate MDD,10,sadness,1.60746
+Severe Ideation,1,suicide,3.720531
+Severe Ideation,2,suicidal,3.541418
+Severe Ideation,3,die,2.882859
+Severe Ideation,4,kill,2.568408
+Severe Ideation,5,pain,2.48978
+Severe Ideation,6,cant,2.207136
+Severe Ideation,7,please,1.96363
+Severe Ideation,8,fucking,1.95258
+Severe Ideation,9,attempt,1.815202
+Severe Ideation,10,anymore,1.803791
