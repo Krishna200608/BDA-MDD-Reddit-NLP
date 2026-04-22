@@ -64,6 +64,7 @@
 - Implemented the VADER sentiment analysis layer — computes the `sentiment_score` (compound polarity) for every post using the uncleaned `selftext` so we don't lose emotional punctuation cues.
 - Orchestrated the full pipeline flow: data collection → raw CSV export → cleaning → feature engineering → processed CSV export.
 - Added the QA hardening layer: duplicate removal, `text_hash`, and `dataset_summary.csv` generation before modeling.
+- Implemented a configurable self-report screening layer in `src/pipeline.py` using first-person regex + symptom lexicon matching, with an `is_self_report` flag and optional filtering via `ENABLE_SELF_REPORT_FILTER`.
 - Validated the final dataset structure: checked schema, class distribution, and processed-output integrity after filtering. The current committed snapshot is three-class and securely deduplicated to a final 9,607 rows.
 - Wrote all documentation: `docs/workflow.md`, the Assignment 1 notebook walkthrough (`notebooks/Assignment_1_PRAW_Extraction.ipynb`).
 - Set up the project structure: `requirements.txt`, `.gitignore`, directory layout.
@@ -71,7 +72,8 @@
 **Key technical details to explain:**
 - VADER (Valence Aware Dictionary and sEntiment Reasoner) is a lexicon-based sentiment tool specifically tuned for social media text. It outputs a compound score from -1 (very negative) to +1 (very positive).
 - We feed the **original uncleaned text** to VADER (not the cleaned version) because VADER relies on capitalization, punctuation, and emojis for sentiment intensity — cleaning would destroy those signals.
-- The processed CSV currently has 13 columns: `post_id`, `subreddit`, `timestamp`, `title`, `selftext`, `score`, `num_comments`, `author`, `label`, `selftext_cleaned`, `word_count`, `sentiment_score`, `text_hash`.
+- Self-report filtering requires both first-person context (`I`, `my`, `me`) and symptom cues (`depressed`, `hopeless`, `suicidal`, etc.), reducing generic/non-self-report chatter before modeling.
+- The processed CSV currently has 14 columns: `post_id`, `subreddit`, `timestamp`, `title`, `selftext`, `score`, `num_comments`, `author`, `label`, `text_hash`, `is_self_report`, `selftext_cleaned`, `word_count`, `sentiment_score`.
 
 **Files I can point to:**
 - `src/pipeline.py` (lines 91–98 — VADER sentiment scoring)
@@ -130,13 +132,14 @@
 
 | Area | Contribution |
 |:---|:---|
-| **Assignment 1** | VADER sentiment scoring, data validation, `docs/workflow.md`, Assignment 1 notebook |
+| **Assignment 1** | VADER sentiment scoring, self-report regex+keyword filtering, data validation, `docs/workflow.md`, Assignment 1 notebook |
 | **Assignment 2** | Wrote `docs/methods_and_results.md` — full evaluation report with accuracy, precision, recall, F1, EDA findings |
 | **Automation** | Wrote `src/quarterly_updater.py` — local daemon using `schedule` library (90-day loop) |
 | **Documentation** | README.md (architecture diagram, results table, EDA summary, usage guide), Context.md |
 
 **Key talking points:**
 - "I handled all evaluation and documentation. The methods document now explains the upgraded protocol: duplicate-safe data QA, fixed holdout evaluation, repeated cross-validation, permutation testing, learning curve analysis, and holdout error analysis."
+- "I implemented a configurable self-report filter in `src/pipeline.py` that keeps posts only when first-person language and symptom cues co-occur; this can be toggled with `ENABLE_SELF_REPORT_FILTER`."
 - "The report and README now point to generated artifacts such as `dataset_summary.csv`, `results_summary.csv`, `error_analysis_holdout.csv`, and `top_tokens_by_class.csv` so the latest notebook outputs stay synchronized."
 - "For automation, we have two options: GitHub Actions (cloud-based, zero maintenance) and a local Python daemon using the `schedule` library. Both re-run the full pipeline every quarter to keep the dataset fresh."
 - "The README includes a Mermaid architecture diagram that GitHub renders natively, showing the full data flow from scraping to evaluation and EDA."
@@ -150,7 +153,7 @@
 |:---|:---|
 | `src/scraper.py` | Krishna |
 | `src/pipeline.py` (clean_text, preprocessing) | Priyam |
-| `src/pipeline.py` (main orchestration, VADER) | Tavish |
+| `src/pipeline.py` (main orchestration, VADER, self-report filtering) | Tavish |
 | `src/quarterly_updater.py` | Tavish |
 | `src/inference.py` | Priyam |
 | `src/dashboard_utils.py` | Krishna |

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import re
 import warnings
 import hashlib
@@ -24,8 +25,47 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"http\S+|www\.\S+")
 NON_ALPHA_PATTERN: Final[re.Pattern[str]] = re.compile(r"[^a-z\s]")
 MULTISPACE_PATTERN: Final[re.Pattern[str]] = re.compile(r"\s+")
+TOKEN_PATTERN: Final[re.Pattern[str]] = re.compile(r"[a-z']+")
+FIRST_PERSON_PATTERN: Final[re.Pattern[str]] = re.compile(r"\b(i|i'm|im|ive|i've|me|my|myself)\b")
 MIN_WORD_COUNT: Final[int] = 5
 DATASET_SUMMARY_FILENAME: Final[str] = "dataset_summary.csv"
+SELF_REPORT_FLAG_ENV: Final[str] = "ENABLE_SELF_REPORT_FILTER"
+SELF_REPORT_KEYWORDS: Final[set[str]] = {
+    "depressed",
+    "depression",
+    "hopeless",
+    "worthless",
+    "empty",
+    "numb",
+    "suicidal",
+    "suicide",
+    "anxiety",
+    "panic",
+    "insomnia",
+    "fatigue",
+    "tired",
+    "guilt",
+    "sad",
+    "lonely",
+    "crying",
+    "helpless",
+    "overwhelmed",
+    "selfharm",
+}
+SELF_REPORT_PHRASES: Final[tuple[str, ...]] = (
+    "want to die",
+    "kill myself",
+    "end my life",
+    "feel hopeless",
+    "feel worthless",
+    "feel empty",
+    "feel numb",
+    "cant go on",
+    "can't go on",
+    "i was diagnosed",
+    "my depression",
+    "my anxiety",
+)
 
 
 warnings.filterwarnings("ignore")
@@ -46,6 +86,22 @@ def clean_text(text: object, stop_words: set[str]) -> str:
     tokens = cleaned_text.split()
     filtered_tokens = [token for token in tokens if token not in stop_words]
     return " ".join(filtered_tokens)
+
+
+def is_truthy(value: str) -> bool:
+    return value.strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def is_self_report(text: object) -> bool:
+    normalized = MULTISPACE_PATTERN.sub(" ", str(text or "").lower()).strip()
+    if not normalized:
+        return False
+    if not FIRST_PERSON_PATTERN.search(normalized):
+        return False
+    if any(phrase in normalized for phrase in SELF_REPORT_PHRASES):
+        return True
+    tokens = set(TOKEN_PATTERN.findall(normalized))
+    return len(tokens.intersection(SELF_REPORT_KEYWORDS)) > 0
 
 
 def calculate_sentiment(text: object, analyzer: SentimentIntensityAnalyzer) -> float:
@@ -117,7 +173,11 @@ def write_dataset_summary(
     *,
     rows_before_qa: int,
     rows_after_qa: int,
+    rows_after_self_report_filter: int,
     rows_after_length_filter: int,
+    self_report_rows_removed: int,
+    self_report_positive_rows: int,
+    self_report_filter_enabled: bool,
     dropped_short_posts: int,
     removal_summary: dict[str, int],
     df_final: pd.DataFrame,
@@ -126,8 +186,12 @@ def write_dataset_summary(
     summary_rows: list[dict[str, object]] = [
         {"section": "rows", "metric": "rows_before_qa", "value": rows_before_qa},
         {"section": "rows", "metric": "rows_after_qa", "value": rows_after_qa},
+        {"section": "rows", "metric": "rows_after_self_report_filter", "value": rows_after_self_report_filter},
         {"section": "rows", "metric": "rows_after_length_filter", "value": rows_after_length_filter},
         {"section": "rows", "metric": "dropped_short_posts", "value": dropped_short_posts},
+        {"section": "self_report", "metric": "self_report_filter_enabled", "value": self_report_filter_enabled},
+        {"section": "self_report", "metric": "self_report_positive_rows", "value": self_report_positive_rows},
+        {"section": "self_report", "metric": "self_report_rows_removed", "value": self_report_rows_removed},
         {
             "section": "duplicates",
             "metric": "duplicate_post_id_rows_removed",
@@ -168,6 +232,7 @@ def write_dataset_summary(
 def main() -> None:
     logging.info("Starting Data Extraction & Cleaning Pipeline...")
     scraper = PullPushScraper()
+    self_report_filter_enabled = is_truthy(os.getenv(SELF_REPORT_FLAG_ENV, "1"))
 
     logging.info("Fetching MDD Classes...")
     mdd_1 = scraper.fetch_posts("depression", limit=2500)
@@ -194,6 +259,25 @@ def main() -> None:
     df, removal_summary = deduplicate_posts(df)
     rows_after_qa = len(df)
     df["text_hash"] = [build_text_hash(title, selftext) for title, selftext in zip(df["title"], df["selftext"])]
+    df["is_self_report"] = [
+        is_self_report(f"{title} {selftext}") for title, selftext in zip(df["title"], df["selftext"])
+    ]
+    self_report_positive_rows = int(df["is_self_report"].sum())
+
+    if self_report_filter_enabled:
+        rows_before_self_report_filter = len(df)
+        df = df[df["is_self_report"]].copy()
+        self_report_rows_removed = rows_before_self_report_filter - len(df)
+        logging.info(
+            "Self-report filter is ENABLED. Kept %s rows; removed %s rows without first-person symptom signals.",
+            len(df),
+            self_report_rows_removed,
+        )
+    else:
+        self_report_rows_removed = 0
+        logging.info("Self-report filter is DISABLED. Keeping all QA-passed rows.")
+
+    rows_after_self_report_filter = len(df)
 
     logging.info(
         "QA deduplication removed %s duplicate post_id rows and %s duplicate title+selftext rows.",
@@ -230,7 +314,11 @@ def main() -> None:
         summary_path,
         rows_before_qa=rows_before_qa,
         rows_after_qa=rows_after_qa,
+        rows_after_self_report_filter=rows_after_self_report_filter,
         rows_after_length_filter=len(df_clean),
+        self_report_rows_removed=self_report_rows_removed,
+        self_report_positive_rows=self_report_positive_rows,
+        self_report_filter_enabled=self_report_filter_enabled,
         dropped_short_posts=dropped,
         removal_summary=removal_summary,
         df_final=df_clean,
