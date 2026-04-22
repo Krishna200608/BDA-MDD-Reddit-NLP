@@ -206,6 +206,17 @@ def normalize_probabilities(probabilities: np.ndarray, label_order: list[str]) -
     return {label: float(score) for label, score in zip(label_order, clipped)}
 
 
+def compute_sentiment_volatility(text: str) -> float:
+
+    tokens = re.findall(r"[a-z']+", text.lower())
+    if not tokens:
+        return 0.0
+
+    lengths = np.array([len(token) for token in tokens])
+    return float(np.std(lengths) / (np.mean(lengths) + 1e-5))
+
+
+
 @lru_cache(maxsize=1)
 def get_stop_words() -> set[str]:
     try:
