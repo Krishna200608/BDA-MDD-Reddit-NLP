@@ -1,17 +1,19 @@
 section,metric,value
-rows,rows_before_qa,9800
-rows,rows_after_qa,9607
-rows,rows_after_length_filter,9607
+rows,rows_before_qa,209
+rows,rows_after_qa,207
+rows,rows_after_self_report_filter,138
+rows,rows_after_length_filter,138
 rows,dropped_short_posts,0
-duplicates,duplicate_post_id_rows_removed,145
-duplicates,duplicate_title_selftext_rows_removed,48
+self_report,self_report_filter_enabled,True
+self_report,self_report_positive_rows,138
+self_report,self_report_rows_removed,69
+duplicates,duplicate_post_id_rows_removed,2
+duplicates,duplicate_title_selftext_rows_removed,0
 missing,missing_selftext,0
 missing,missing_selftext_cleaned,0
-length,word_count_min,5
-length,word_count_median,46.0
-length,word_count_mean,68.19
-dates,timestamp_min,2025-03-05T06:40:41
-dates,timestamp_max,2025-05-19T18:11:58
-labels,label_count_Control,4903
-labels,label_count_Moderate MDD,2408
-labels,label_count_Severe Ideation,2296
+length,word_count_min,9
+length,word_count_median,91.0
+length,word_count_mean,112.04
+dates,timestamp_min,2025-05-18T11:20:34
+dates,timestamp_max,2025-05-19T13:03:51
+labels,label_count_Moderate MDD,138
